@@ -3,7 +3,6 @@ const gallery = document.getElementById('gallery'), input = document.getElementB
 const header = document.getElementById('mainHeader'), bottomNav = document.getElementById('bottomNav');
 const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect');
 const dynamicControls = document.getElementById('dynamicControls');
-const gridSearchInput = document.getElementById('gridSearchInput');
 
 let allNfts = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
 let touchStartX = 0, touchStartY = 0;
@@ -16,27 +15,28 @@ document.getElementById('themeToggle').onclick = () => {
 };
 
 document.getElementById('shuffleBtn').onclick = () => { if (allNfts.length > 0) renderAll(); gallery.scrollTo({ top: 0, behavior: 'smooth' }); };
-gridSearchInput.oninput = () => renderAll();
 
-gallery.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; touchStartY = e.changedTouches[0].screenY; }, {passive: true});
+gallery.addEventListener('touchstart', e => { 
+    touchStartX = e.changedTouches[0].screenX; 
+    touchStartY = e.changedTouches[0].screenY; 
+}, {passive: true});
+
 gallery.addEventListener('touchend', e => {
     const xDiff = e.changedTouches[0].screenX - touchStartX;
+    // Switch to home on left-to-right swipe in Grid
     if (document.documentElement.getAttribute('data-view') === 'grid' && xDiff > 100 && Math.abs(e.changedTouches[0].screenY - touchStartY) < 50) switchView('snap');
 }, {passive: true});
 
-// SHARED SCROLL LOGIC FOR BOTH VIEWS
 gallery.onscroll = () => {
     const cur = gallery.scrollTop;
-    if (cur > lastScrollY && cur > 100) { 
-        header.classList.add('ui-hidden'); 
-        bottomNav.classList.add('ui-hidden'); 
-    } else { 
-        header.classList.remove('ui-hidden'); 
-        bottomNav.classList.remove('ui-hidden'); 
-    }
+    if (cur > lastScrollY && cur > 100) hideUI();
+    else if (cur < lastScrollY) showUI();
     lastScrollY = cur;
     if (gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight - 1000 && continuation && !isFetching) fetchArt();
 };
+
+function hideUI() { header.classList.add('ui-hidden'); bottomNav.classList.add('ui-hidden'); }
+function showUI() { header.classList.remove('ui-hidden'); bottomNav.classList.remove('ui-hidden'); }
 
 async function fetchArt(isNew = false) {
     currentWallet = input.value.trim();
@@ -59,7 +59,6 @@ async function fetchArt(isNew = false) {
 function renderAll() {
     gallery.innerHTML = "";
     const mode = document.documentElement.getAttribute('data-view');
-    const filter = gridSearchInput.value.toLowerCase();
     
     if (mode === 'snap') {
         const groups = {};
@@ -67,8 +66,14 @@ function renderAll() {
         Object.keys(groups).sort(() => Math.random() - 0.5).forEach(k => {
             const items = groups[k], card = document.createElement('div'), slider = document.createElement('div');
             card.className = 'art-card'; slider.className = 'collection-slider';
-            if (items.length > 1) slider.onscroll = (e) => checkEndSwipe(e.target);
+            
+            // HIDE UI ON SWIPE RIGHT WITHIN COLLECTION
+            slider.addEventListener('touchstart', () => {}, {passive: true});
+            slider.addEventListener('scroll', () => { hideUI(); }, {passive: true});
+
+            if (items.length > 1) slider.onscroll = (e) => { hideUI(); checkEndSwipe(e.target); };
             else slider.ontouchend = (e) => { if (touchStartX - e.changedTouches[0].screenX > 80) switchView('grid'); };
+            
             items.forEach((n, idx) => {
                 const s = document.createElement('div'); s.className = 'collection-slide';
                 s.innerHTML = `<div class="collection-counter">${idx + 1}/${items.length}</div><button class="quick-share" onclick="event.stopPropagation(); share('${n.opensea_url}')"><i data-lucide="share-2"></i></button><img src="${n.image_url || n.display_image_url}" loading="lazy">`;
@@ -77,12 +82,19 @@ function renderAll() {
             card.appendChild(slider); gallery.appendChild(card);
         });
     } else {
-        let list = allNfts.filter(n => (n.name||"").toLowerCase().includes(filter) || (n.collection||"").toLowerCase().includes(filter));
         const sort = sortSelect.value;
+        let list = [...allNfts];
         if (sort === 'project') {
             list.sort((a,b) => (a.collection||"").localeCompare(b.collection||""));
             let last = ""; list.forEach(n => {
                 if (n.collection !== last) { appendHeader(n.collection || "UNCATEGORIZED"); last = n.collection; }
+                gallery.appendChild(createGridCard(n));
+            });
+        } else if (sort === 'artist') {
+            // Sort by creator/artist
+            list.sort((a,b) => (a.creator||"").localeCompare(b.creator||""));
+            let lastA = ""; list.forEach(n => {
+                if (n.creator !== lastA) { appendHeader(n.creator || "UNKNOWN ARTIST"); lastA = n.creator; }
                 gallery.appendChild(createGridCard(n));
             });
         } else if (sort === 'name') {
@@ -145,12 +157,8 @@ function switchView(mode) {
     document.documentElement.setAttribute('data-view', mode);
     document.getElementById('navHome').classList.toggle('active', mode === 'snap');
     document.getElementById('navGrid').classList.toggle('active', mode === 'grid');
-    
-    // UI resets when switching
-    header.classList.remove('ui-hidden'); 
-    bottomNav.classList.remove('ui-hidden');
-    
-    gridSearchInput.value = ""; gallery.scrollTo(0,0); renderAll();
+    showUI();
+    gallery.scrollTo(0,0); renderAll();
 }
 document.getElementById('navHome').onclick = () => switchView('snap');
 document.getElementById('navGrid').onclick = () => switchView('grid');
