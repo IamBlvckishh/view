@@ -71,7 +71,9 @@ function renderAll() {
         Object.keys(groups).sort(() => Math.random() - 0.5).forEach(k => {
             const items = groups[k], card = document.createElement('div'), slider = document.createElement('div');
             card.className = 'art-card'; slider.className = 'collection-slider';
-            slider.onscroll = () => { hideUI(); checkEndSwipe(slider); };
+            
+            // Hides UI on horizontal swipe
+            slider.addEventListener('scroll', () => { hideUI(); checkEndSwipe(slider); }, {passive: true});
             
             items.forEach((n, idx) => {
                 const s = document.createElement('div'); s.className = 'collection-slide';
