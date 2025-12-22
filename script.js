@@ -4,7 +4,7 @@ const header = document.getElementById('mainHeader'), bottomNav = document.getEl
 const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect');
 const dynamicControls = document.getElementById('dynamicControls');
 let allNfts = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
-let touchStartX = 0;
+let tStartX = 0, tStartY = 0;
 
 document.getElementById('themeToggle').onclick = () => {
     const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -18,18 +18,23 @@ document.getElementById('shuffleBtn').onclick = () => {
     gallery.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// GLOBAL SWIPE NAVIGATION
+// IMPROVED SWIPE LOGIC
 gallery.addEventListener('touchstart', e => { 
-    touchStartX = e.changedTouches[0].screenX; 
+    tStartX = e.changedTouches[0].screenX; 
+    tStartY = e.changedTouches[0].screenY;
 }, {passive: true});
 
 gallery.addEventListener('touchend', e => {
-    const touchEndX = e.changedTouches[0].screenX;
+    const tEndX = e.changedTouches[0].screenX;
+    const tEndY = e.changedTouches[0].screenY;
+    const xDiff = tEndX - tStartX;
+    const yDiff = Math.abs(tEndY - tStartY);
     const mode = document.documentElement.getAttribute('data-view');
-    const diff = touchEndX - touchStartX;
 
-    // Grid to Home (Swipe Right anywhere on grid)
-    if (mode === 'grid' && diff > 100) switchView('snap');
+    // Universal Grid -> Home (Swipe Right anywhere)
+    if (mode === 'grid' && xDiff > 100 && xDiff > yDiff) {
+        switchView('snap');
+    }
 }, {passive: true});
 
 gallery.onscroll = () => {
@@ -78,12 +83,12 @@ function renderAll() {
             const slider = document.createElement('div');
             slider.className = 'collection-slider';
             
-            // Local Swipe logic for Home -> Grid
+            // Home -> Grid Logic (Only at end of swipe)
             slider.onscroll = (e) => {
                 const el = e.target;
                 const isAtEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 5;
-                el.ontouchend = () => {
-                    const finalDiff = touchStartX - event.changedTouches[0].screenX;
+                el.ontouchend = (ev) => {
+                    const finalDiff = tStartX - ev.changedTouches[0].screenX;
                     if (isAtEnd && finalDiff > 80) switchView('grid');
                 };
             };
@@ -152,10 +157,15 @@ document.querySelector('.close-btn').onclick = () => modal.classList.add('hidden
 document.querySelector('.modal-overlay').onclick = () => modal.classList.add('hidden');
 
 function switchView(mode) {
-    document.documentElement.setAttribute('data-view', mode);
-    document.getElementById('navHome').classList.toggle('active', mode === 'snap');
-    document.getElementById('navGrid').classList.toggle('active', mode === 'grid');
-    renderAll();
+    gallery.classList.add('view-transitioning');
+    setTimeout(() => {
+        document.documentElement.setAttribute('data-view', mode);
+        document.getElementById('navHome').classList.toggle('active', mode === 'snap');
+        document.getElementById('navGrid').classList.toggle('active', mode === 'grid');
+        gallery.scrollTo(0,0);
+        renderAll();
+        gallery.classList.remove('view-transitioning');
+    }, 150);
 }
 document.getElementById('navHome').onclick = () => switchView('snap');
 document.getElementById('navGrid').onclick = () => switchView('grid');
