@@ -2,6 +2,7 @@ lucide.createIcons();
 const gallery = document.getElementById('gallery'), input = document.getElementById('walletInput');
 const header = document.getElementById('mainHeader'), bottomNav = document.getElementById('bottomNav');
 const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect');
+const dynamicControls = document.getElementById('dynamicControls');
 let allNfts = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
 
 // THEME & SHUFFLE
@@ -36,7 +37,7 @@ async function fetchArt(isNew = false) {
         if (data.nfts) {
             allNfts = [...allNfts, ...data.nfts];
             continuation = data.next;
-            document.getElementById('viewControls').classList.remove('hidden');
+            dynamicControls.classList.remove('hidden'); // Show shuffle/sort now
             bottomNav.classList.remove('hidden');
             renderAll();
         }
@@ -55,22 +56,23 @@ function renderAll() {
             groups[slug].push(nft);
         });
 
-        // SHUFFLE COLLECTIONS ORDER
         const shuffledKeys = Object.keys(groups).sort(() => Math.random() - 0.5);
         
         shuffledKeys.forEach(key => {
-            const items = groups[key].sort(() => Math.random() - 0.5); // Randomize items inside the swipe
+            const items = groups[key].sort(() => Math.random() - 0.5);
             const card = document.createElement('div');
             card.className = 'art-card';
             
             const slider = document.createElement('div');
             slider.className = 'collection-slider';
+            slider.onscroll = (e) => checkEndSwipe(e.target);
 
             items.forEach((nft, idx) => {
                 const slide = document.createElement('div');
                 slide.className = 'collection-slide';
                 slide.innerHTML = `
                     <div class="collection-counter">${idx + 1} / ${items.length}</div>
+                    <button class="quick-share" onclick="event.stopPropagation(); share('${nft.opensea_url}')"><i data-lucide="share-2"></i></button>
                     <img src="${nft.image_url || nft.display_image_url}" loading="lazy">
                 `;
                 slide.onclick = () => showDetails(nft.contract, nft.identifier);
@@ -93,6 +95,15 @@ function renderAll() {
         });
     }
     lucide.createIcons();
+}
+
+function checkEndSwipe(el) {
+    const isAtEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 5;
+    el.addEventListener('touchend', () => {
+        if (isAtEnd && document.documentElement.getAttribute('data-view') === 'snap') {
+            switchView('grid');
+        }
+    }, { once: true });
 }
 
 async function showDetails(contract, id) {
