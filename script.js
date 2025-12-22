@@ -18,7 +18,7 @@ document.getElementById('shuffleBtn').onclick = () => {
     gallery.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// UNIVERSAL SWIPE (Grid to Home)
+// Universal Swipe (Grid to Home)
 gallery.addEventListener('touchstart', e => { 
     touchStartX = e.changedTouches[0].screenX; 
     touchStartY = e.changedTouches[0].screenY;
@@ -68,8 +68,9 @@ function renderAll() {
     
     if (mode === 'snap') {
         const groups = {};
-        allNfts.forEach(nft => {
-            const slug = nft.collection || "Uncategorized";
+        allNfts.forEach((nft, i) => {
+            // FIX: If no collection name, use unique ID so it's a 1/1
+            const slug = nft.collection || `unique-${i}`;
             if (!groups[slug]) groups[slug] = [];
             groups[slug].push(nft);
         });
@@ -81,7 +82,6 @@ function renderAll() {
             const slider = document.createElement('div');
             slider.className = 'collection-slider';
             
-            // For multi-item: use scroll logic. For 1/1s: use direct touch logic.
             if (items.length > 1) {
                 slider.onscroll = (e) => checkEndSwipe(e.target);
             } else {
@@ -142,7 +142,7 @@ async function showDetails(contract, id) {
         sBtn.onclick = () => share(nft.opensea_url);
         mData.innerHTML = `
             <h2 style="font-size:24px; font-weight:900; margin-bottom:5px;">${nft.name || 'UNTITLED'}</h2>
-            <p style="opacity:0.5; font-size:10px; margin-bottom:15px; letter-spacing:1px;">${nft.collection.toUpperCase()}</p>
+            <p style="opacity:0.5; font-size:10px; margin-bottom:15px; letter-spacing:1px;">${nft.collection ? nft.collection.toUpperCase() : 'UNKNOWN'}</p>
             <p style="font-size:14px; opacity:0.8; line-height:1.6;">${nft.description || ''}</p>
             <a href="${nft.opensea_url}" target="_blank" rel="noopener" style="display:block; width:100%; padding:20px; background:var(--text); color:var(--bg); text-align:center; border-radius:14px; font-weight:900; margin-top:30px; text-decoration:none;">VIEW ON OPENSEA</a>
         `;
