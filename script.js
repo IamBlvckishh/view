@@ -6,7 +6,6 @@ const dynamicControls = document.getElementById('dynamicControls');
 let allNfts = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
 let touchStartX = 0;
 
-// THEME & SHUFFLE
 document.getElementById('themeToggle').onclick = () => {
     const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', theme);
@@ -19,13 +18,18 @@ document.getElementById('shuffleBtn').onclick = () => {
     gallery.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// SWIPE NAVIGATION (Grid to Home)
-gallery.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+// GLOBAL SWIPE NAVIGATION
+gallery.addEventListener('touchstart', e => { 
+    touchStartX = e.changedTouches[0].screenX; 
+}, {passive: true});
+
 gallery.addEventListener('touchend', e => {
     const touchEndX = e.changedTouches[0].screenX;
     const mode = document.documentElement.getAttribute('data-view');
-    // Swipe Right (Left to Right) on Grid -> Home
-    if (mode === 'grid' && (touchEndX - touchStartX > 100)) switchView('snap');
+    const diff = touchEndX - touchStartX;
+
+    // Grid to Home (Swipe Right anywhere on grid)
+    if (mode === 'grid' && diff > 100) switchView('snap');
 }, {passive: true});
 
 gallery.onscroll = () => {
@@ -66,16 +70,23 @@ function renderAll() {
             groups[slug].push(nft);
         });
 
-        const shuffledKeys = Object.keys(groups).sort(() => Math.random() - 0.5);
-        
-        shuffledKeys.forEach(key => {
+        Object.keys(groups).sort(() => Math.random() - 0.5).forEach(key => {
             const items = groups[key].sort(() => Math.random() - 0.5);
             const card = document.createElement('div');
             card.className = 'art-card';
             
             const slider = document.createElement('div');
             slider.className = 'collection-slider';
-            slider.onscroll = (e) => checkEndSwipe(e.target);
+            
+            // Local Swipe logic for Home -> Grid
+            slider.onscroll = (e) => {
+                const el = e.target;
+                const isAtEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 5;
+                el.ontouchend = () => {
+                    const finalDiff = touchStartX - event.changedTouches[0].screenX;
+                    if (isAtEnd && finalDiff > 80) switchView('grid');
+                };
+            };
 
             items.forEach((nft, idx) => {
                 const slide = document.createElement('div');
@@ -105,15 +116,6 @@ function renderAll() {
         });
     }
     lucide.createIcons();
-}
-
-function checkEndSwipe(el) {
-    const isAtEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 5;
-    el.addEventListener('touchend', () => {
-        if (isAtEnd && document.documentElement.getAttribute('data-view') === 'snap') {
-            switchView('grid');
-        }
-    }, { once: true });
 }
 
 async function showDetails(contract, id) {
