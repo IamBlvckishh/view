@@ -118,7 +118,7 @@ async function showDetails(contract, id) {
             const status = document.getElementById('tabStatus');
             status.style.opacity = "1";
             setTimeout(() => { status.style.opacity = "0"; }, 2000);
-            window.focus();
+            window.focus(); // Try to keep focus on app
         };
     } catch (e) { }
     lucide.createIcons();
