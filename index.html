@@ -9,9 +9,12 @@
 </head>
 <body>
 
-    <header>
+    <header id="mainHeader">
         <div class="header-content">
-            <h1>VIEW</h1>
+            <div class="logo-row">
+                <h1>VIEW</h1>
+                <button id="themeToggle"><i data-lucide="sun"></i></button>
+            </div>
             <div class="search-box">
                 <input type="text" id="walletInput" placeholder="ENTER 0x ADDRESS">
                 <button id="goBtn"><i data-lucide="arrow-right"></i></button>
@@ -36,10 +39,6 @@
         <div class="nav-item" id="navGrid">
             <i data-lucide="layout-grid"></i>
             <span>GRID</span>
-        </div>
-        <div class="nav-item" id="themeToggle">
-            <i data-lucide="sun"></i>
-            <span>THEME</span>
         </div>
     </nav>
 
