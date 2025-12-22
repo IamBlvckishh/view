@@ -3,31 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIEW | Shape NFT Gallery</title>
+    <title>VIEW</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-
     <header>
         <div class="header-content">
-            <div class="logo-area">
-                <h1>VIEW</h1>
-                <span class="chain-tag">SHAPE L2</span>
-            </div>
+            <h1>VIEW</h1>
             <div class="search-container">
-                <input type="text" id="walletInput" placeholder="Paste wallet address (0x...)">
+                <input type="text" id="walletInput" placeholder="0x... address">
                 <button id="goBtn"><i data-lucide="arrow-right"></i></button>
             </div>
         </div>
     </header>
 
-    <main id="gallery">
-        <div id="empty-state">
-            <i data-lucide="scan" size="48"></i>
-            <p>Enter a wallet to start viewing</p>
-        </div>
-    </main>
+    <main id="gallery"></main>
+
+    <div id="status"></div> 
 
     <div id="loader" class="hidden">
         <div class="spinner"></div>
