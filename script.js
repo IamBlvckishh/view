@@ -4,19 +4,13 @@ const header = document.getElementById('mainHeader'), bottomNav = document.getEl
 const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect');
 let allNfts = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
 
-// REFRESH GESTURE
-let touchstartY = 0;
-gallery.addEventListener('touchstart', e => { touchstartY = e.touches[0].pageY; }, { passive: true });
-gallery.addEventListener('touchmove', e => {
-    const pullDist = e.touches[0].pageY - touchstartY;
-    if (gallery.scrollTop <= 0 && pullDist > 80) document.body.classList.add('pulling');
-}, { passive: true });
-gallery.addEventListener('touchend', () => {
-    if (document.body.classList.contains('pulling')) {
-        document.body.classList.remove('pulling');
-        if (allNfts.length > 0) renderAll();
-    }
-}, { passive: true });
+// THEME ENGINE
+document.getElementById('themeToggle').onclick = () => {
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.getElementById('themeToggle').innerHTML = `<i data-lucide="${theme === 'dark' ? 'sun' : 'moon'}"></i>`;
+    lucide.createIcons();
+};
 
 // UI AUTO-HIDE
 gallery.onscroll = () => {
@@ -25,39 +19,6 @@ gallery.onscroll = () => {
     else { header.classList.remove('ui-hidden'); bottomNav.classList.remove('ui-hidden'); }
     lastScrollY = cur;
     if (gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight - 1000 && continuation && !isFetching) fetchArt();
-};
-
-// SWIPE NAV
-let tstartX = 0;
-window.addEventListener('touchstart', e => tstartX = e.changedTouches[0].screenX);
-window.addEventListener('touchend', e => {
-    let tendX = e.changedTouches[0].screenX;
-    if (tendX < tstartX - 100) switchView('grid');
-    if (tendX > tstartX + 100) switchView('snap');
-});
-
-function switchView(mode) {
-    if (document.documentElement.getAttribute('data-view') === mode) return;
-    gallery.classList.add('view-switching');
-    setTimeout(() => {
-        document.documentElement.setAttribute('data-view', mode);
-        document.getElementById('navHome').classList.toggle('active', mode === 'snap');
-        document.getElementById('navGrid').classList.toggle('active', mode === 'grid');
-        renderAll();
-        gallery.classList.remove('view-switching');
-    }, 300);
-}
-
-document.getElementById('navHome').onclick = () => switchView('snap');
-document.getElementById('navGrid').onclick = () => switchView('grid');
-sortSelect.onchange = () => renderAll();
-
-// THEME TOGGLE
-document.getElementById('themeToggle').onclick = () => {
-    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', theme);
-    document.getElementById('themeToggle').innerHTML = `<i data-lucide="${theme === 'dark' ? 'sun' : 'moon'}"></i>`;
-    lucide.createIcons();
 };
 
 async function fetchArt(isNew = false) {
@@ -81,21 +42,49 @@ async function fetchArt(isNew = false) {
 function renderAll() {
     gallery.innerHTML = "";
     const mode = document.documentElement.getAttribute('data-view');
-    let list = (mode === 'snap') ? [...allNfts].sort(() => Math.random() - 0.5) : [...allNfts];
-    if (mode === 'grid' && sortSelect.value !== 'none') {
+    
+    if (mode === 'snap') {
+        const groups = {};
+        allNfts.forEach(nft => {
+            const slug = nft.collection || "Uncategorized";
+            if (!groups[slug]) groups[slug] = [];
+            groups[slug].push(nft);
+        });
+
+        Object.keys(groups).sort(() => Math.random() - 0.5).forEach(key => {
+            const items = groups[key];
+            const card = document.createElement('div');
+            card.className = 'art-card';
+            
+            const slider = document.createElement('div');
+            slider.className = 'collection-slider';
+
+            items.forEach((nft, idx) => {
+                const slide = document.createElement('div');
+                slide.className = 'collection-slide';
+                slide.innerHTML = `
+                    <div class="collection-counter">${idx + 1} / ${items.length}</div>
+                    <img src="${nft.image_url || nft.display_image_url}" loading="lazy">
+                `;
+                slide.onclick = () => showDetails(nft.contract, nft.identifier);
+                slider.appendChild(slide);
+            });
+            card.appendChild(slider);
+            gallery.appendChild(card);
+        });
+    } else {
+        let list = [...allNfts];
         if (sortSelect.value === 'project') list.sort((a,b) => (a.collection || "").localeCompare(b.collection || ""));
-        else list.sort((a,b) => (a.name || "").localeCompare(b.name || ""));
+        else if (sortSelect.value === 'name') list.sort((a,b) => (a.name || "").localeCompare(b.name || ""));
+
+        list.forEach(nft => {
+            const card = document.createElement('div');
+            card.className = 'art-card';
+            card.innerHTML = `<img src="${nft.image_url || nft.display_image_url}" loading="lazy">`;
+            card.onclick = () => showDetails(nft.contract, nft.identifier);
+            gallery.appendChild(card);
+        });
     }
-    list.forEach(nft => {
-        const img = nft.image_url || nft.display_image_url;
-        if (!img) return;
-        const card = document.createElement('div');
-        card.className = 'art-card';
-        card.innerHTML = `<div class="img-frame"><img src="${img}" loading="lazy"></div>
-            ${mode === 'snap' ? `<button class="share-action" onclick="event.stopPropagation(); share('${nft.opensea_url}')"><i data-lucide="share-2"></i></button>` : ''}`;
-        card.onclick = () => showDetails(nft.contract, nft.identifier);
-        gallery.appendChild(card);
-    });
     lucide.createIcons();
 }
 
@@ -107,24 +96,18 @@ async function showDetails(contract, id) {
         const res = await fetch(`/api/view?address=${contract}&id=${id}`);
         const data = await res.json(), nft = data.nft;
         sBtn.onclick = () => share(nft.opensea_url);
-        
-        // STANDARD TAB OPEN: Simple anchor tag with target="_blank"
         mData.innerHTML = `
             <h2 style="font-size:24px; font-weight:900;">${nft.name || 'UNTITLED'}</h2>
             <p style="opacity:0.5; font-size:10px; margin-bottom:15px;">${nft.collection.toUpperCase()}</p>
-            <p style="font-size:14px; opacity:0.8; line-height:1.5;">${nft.description || 'No description.'}</p>
-            <a href="${nft.opensea_url}" target="_blank" rel="noopener noreferrer" style="display:block; width:100%; padding:18px; background:var(--text); color:var(--bg); text-align:center; border-radius:12px; border:none; font-weight:900; margin-top:25px; text-decoration: none;">
-                VIEW ON OPENSEA
-            </a>
+            <p style="font-size:14px; opacity:0.8; line-height:1.5;">${nft.description || ''}</p>
+            <a href="${nft.opensea_url}" target="_blank" rel="noopener" style="display:block; width:100%; padding:18px; background:var(--text); color:var(--bg); text-align:center; border-radius:12px; font-weight:900; margin-top:25px; text-decoration:none;">VIEW ON OPENSEA</a>
         `;
-    } catch (e) { mData.innerHTML = "<p>Error loading NFT details.</p>"; }
-    lucide.createIcons();
+    } catch (e) { mData.innerHTML = "Error loading."; }
 }
 
 window.share = (url) => {
-    if (navigator.share) {
-        navigator.share({ title: 'VIEW', url: url }).catch(() => {});
-    } else {
+    if (navigator.share) navigator.share({ title: 'VIEW', url: url });
+    else {
         navigator.clipboard.writeText(url);
         const toast = document.getElementById('toast');
         toast.classList.remove('hidden');
@@ -136,3 +119,13 @@ document.getElementById('goBtn').onclick = () => fetchArt(true);
 input.onkeydown = (e) => { if (e.key === 'Enter') fetchArt(true); };
 document.querySelector('.close-btn').onclick = () => modal.classList.add('hidden');
 document.querySelector('.modal-overlay').onclick = () => modal.classList.add('hidden');
+
+function switchView(mode) {
+    document.documentElement.setAttribute('data-view', mode);
+    document.getElementById('navHome').classList.toggle('active', mode === 'snap');
+    document.getElementById('navGrid').classList.toggle('active', mode === 'grid');
+    renderAll();
+}
+document.getElementById('navHome').onclick = () => switchView('snap');
+document.getElementById('navGrid').onclick = () => switchView('grid');
+sortSelect.onchange = () => renderAll();
