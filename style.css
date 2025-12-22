@@ -1,80 +1,68 @@
-:root[data-theme="dark"] { --bg: #000; --card: #111; --text: #fff; --border: #222; --glass: rgba(255,255,255,0.1); }
-:root[data-theme="light"] { --bg: #fff; --card: #f0f0f0; --text: #000; --border: #ddd; --glass: rgba(0,0,0,0.05); }
+:root[data-theme="dark"] { --bg: #000; --card: #0c0c0c; --text: #fff; --border: #1a1a1a; }
+:root[data-theme="light"] { --bg: #fff; --card: #f8f8f8; --text: #000; --border: #eee; }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, sans-serif; }
 body { background: var(--bg); color: var(--text); overflow: hidden; }
 
 header {
     position: fixed; top: 0; width: 100%; z-index: 100;
-    padding: 20px; background: linear-gradient(to bottom, var(--bg) 80%, transparent);
+    padding: 15px; background: var(--bg); border-bottom: 1px solid var(--border);
 }
 
-.nav-top { display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto 15px; }
-h1 { font-size: 10px; letter-spacing: 0.8em; font-weight: 900; opacity: 0.6; }
+.nav-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+h1 { font-size: 10px; letter-spacing: 0.8em; font-weight: 900; opacity: 0.5; }
+
+.controls { display: flex; gap: 10px; align-items: center; }
+#sortSelect { 
+    background: var(--card); color: var(--text); border: 1px solid var(--border);
+    font-size: 9px; padding: 5px; border-radius: 5px; font-weight: 700;
+}
 
 .search-box { 
-    max-width: 500px; margin: 0 auto; background: var(--card); 
-    border-radius: 50px; padding: 5px 20px; display: flex; border: 1px solid var(--border);
+    background: var(--card); border-radius: 12px; padding: 2px 15px; 
+    display: flex; border: 1px solid var(--border);
 }
-input { background: transparent; border: none; color: inherit; flex: 1; padding: 10px; outline: none; font-weight: 700; }
+input { background: transparent; border: none; color: inherit; flex: 1; padding: 10px; outline: none; font-weight: 600; }
 
-/* DOOMSCROLL SNAP ENGINE */
-.snap-container {
-    height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory;
+/* SCROLL MODE OPTIMIZATION */
+[data-view="snap"] .snap-container {
+    height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory;
 }
-
-.art-card {
-    height: 100vh; width: 100vw; scroll-snap-align: start; scroll-snap-stop: always;
-    display: flex; align-items: center; justify-content: center; position: relative;
+[data-view="snap"] .art-card {
+    height: 100vh; width: 100vw; scroll-snap-align: start;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
 }
-
-/* Standardization: Same Dimension for All */
-.img-frame {
-    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-}
-.img-frame img {
-    width: 100%; height: 100%; object-fit: cover; /* Forces same dimension */
-    cursor: pointer;
+[data-view="snap"] .img-frame {
+    width: 100%; max-width: 400px; max-height: 70vh; /* Better mobile fit */
+    aspect-ratio: 1/1; border-radius: 20px; overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
 }
 
-/* Floating Action Bar (TikTok Style) */
-.action-bar {
-    position: absolute; right: 20px; bottom: 100px;
-    display: flex; flex-direction: column; gap: 20px; z-index: 10;
-}
-.action-btn {
-    background: var(--glass); backdrop-filter: blur(10px);
-    border: 1px solid var(--border); color: #fff;
-    width: 50px; height: 50px; border-radius: 50%;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; transition: transform 0.2s;
-}
-.action-btn:active { transform: scale(0.9); }
-.action-btn span { font-size: 10px; font-weight: 800; margin-top: 2px; }
-.action-btn.liked { color: #ff3b3b; border-color: #ff3b3b; }
-
-/* Grid View Adjustments */
+/* GRID MODE OPTIMIZATION */
 [data-view="grid"] .snap-container {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 2px; padding-top: 140px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+    padding: 130px 2px 50px; height: 100vh; overflow-y: auto;
 }
-[data-view="grid"] .art-card { height: 200px; width: 100%; scroll-snap-align: none; }
-[data-view="grid"] .action-bar { display: none; }
+[data-view="grid"] .art-card { height: auto; width: 100%; }
+[data-view="grid"] .img-frame { border-radius: 0; aspect-ratio: 1/1; }
 
-/* Back to Top */
-#backToTop {
-    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-    background: var(--text); color: var(--bg); border: none;
-    padding: 12px 20px; border-radius: 50px; font-weight: 900;
-    z-index: 90; cursor: pointer; display: flex; align-items: center; gap: 8px;
+.img-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+/* SOCIAL BUTTONS */
+.action-bar { position: absolute; right: 15px; bottom: 120px; display: flex; flex-direction: column; gap: 15px; }
+.action-btn { 
+    background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); 
+    border: 1px solid rgba(255,255,255,0.1); color: #fff;
+    width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+}
+
+/* MODAL */
+.modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; }
+.modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); }
+.modal-content {
+    background: var(--card); width: 100%; padding: 30px;
+    border-radius: 25px 25px 0 0; position: relative; z-index: 210;
 }
 
 .hidden { display: none !important; }
-
-/* Modal Bottom Sheet */
-.modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; }
-.modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); }
-.modal-content {
-    background: var(--card); width: 100%; max-height: 70vh; padding: 30px;
-    border-radius: 30px 30px 0 0; position: relative; z-index: 210; overflow-y: auto;
-}
+footer { padding: 30px; text-align: center; font-size: 9px; opacity: 0.4; }
