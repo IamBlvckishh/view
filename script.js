@@ -4,6 +4,7 @@ const header = document.getElementById('mainHeader'), bottomNav = document.getEl
 const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect');
 const dynamicControls = document.getElementById('dynamicControls');
 let allNfts = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
+let touchStartX = 0;
 
 // THEME & SHUFFLE
 document.getElementById('themeToggle').onclick = () => {
@@ -17,6 +18,15 @@ document.getElementById('shuffleBtn').onclick = () => {
     if (allNfts.length > 0) renderAll();
     gallery.scrollTo({ top: 0, behavior: 'smooth' });
 };
+
+// SWIPE NAVIGATION (Grid to Home)
+gallery.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+gallery.addEventListener('touchend', e => {
+    const touchEndX = e.changedTouches[0].screenX;
+    const mode = document.documentElement.getAttribute('data-view');
+    // Swipe Right (Left to Right) on Grid -> Home
+    if (mode === 'grid' && (touchEndX - touchStartX > 100)) switchView('snap');
+}, {passive: true});
 
 gallery.onscroll = () => {
     const cur = gallery.scrollTop;
@@ -37,7 +47,7 @@ async function fetchArt(isNew = false) {
         if (data.nfts) {
             allNfts = [...allNfts, ...data.nfts];
             continuation = data.next;
-            dynamicControls.classList.remove('hidden'); // Show shuffle/sort now
+            dynamicControls.classList.remove('hidden');
             bottomNav.classList.remove('hidden');
             renderAll();
         }
