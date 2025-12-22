@@ -9,24 +9,18 @@ header { position: fixed; top: 0; width: 100%; z-index: 100; padding: 15px 20px;
 #bottomNav.ui-hidden { transform: translateY(100%); }
 
 .logo-row { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; position: relative; }
-h1 { font-size: 22px; letter-spacing: 0.5em; font-weight: 900; margin-left: 40px; }
+h1 { font-size: 22px; letter-spacing: 0.5em; font-weight: 900; }
 .icon-btn { background: none; border: none; color: var(--text); cursor: pointer; width: 40px; position: absolute; right: 0; }
 
 .search-box { background: var(--card); border-radius: 12px; padding: 0 15px; display: flex; border: 1px solid var(--border); margin-bottom: 10px; }
 input { background: transparent; border: none; color: var(--text); flex: 1; padding: 12px 0; outline: none; font-weight: 600; }
 
 #dynamicControls { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-#shuffleBtn { 
-    background: var(--border); border: none; color: var(--text); 
-    padding: 8px 16px; border-radius: 20px; font-size: 10px; 
-    font-weight: 900; display: flex; align-items: center; gap: 6px; cursor: pointer;
-}
-#shuffleBtn i { width: 14px; }
+#shuffleBtn { background: var(--border); border: none; color: var(--text); padding: 8px 16px; border-radius: 20px; font-size: 10px; font-weight: 900; display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
 #viewControls { display: flex; justify-content: center; }
 #sortSelect { background: transparent; color: var(--text); border: none; font-size: 10px; font-weight: 800; opacity: 0.6; outline: none; }
 
-/* Visibility Logic */
 [data-view="grid"] #shuffleBtn { display: none; }
 [data-view="snap"] #viewControls { display: none !important; }
 
@@ -38,16 +32,21 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
 .nav-item span { font-size: 8px; font-weight: 900; }
 
 .snap-container { height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; }
-[data-view="grid"] .snap-container { scroll-snap-type: none; overflow-y: auto; }
+[data-view="grid"] .snap-container { scroll-snap-type: none; overflow-y: auto; touch-action: pan-y pan-x; }
 
 .art-card { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; }
 .collection-slider { display: flex; width: 100%; height: 100%; overflow-x: scroll; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .collection-slider::-webkit-scrollbar { display: none; }
 
-.collection-slide { flex: 0 0 100vw; height: 100vh; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; position: relative; }
-.collection-slide img { width: 100%; height: 100%; object-fit: contain; background: #000; }
+/* Vertically Centering Logic */
+.collection-slide { 
+    flex: 0 0 100vw; height: 100vh; scroll-snap-align: start; 
+    display: flex; align-items: center; justify-content: center; 
+    position: relative; padding-bottom: 60px; /* Offset for bottom nav to look centered */
+}
+.collection-slide img { width: 100%; height: 75vh; object-fit: contain; background: transparent; }
 
-.collection-counter { position: absolute; top: 180px; right: 20px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 900; z-index: 10; border: 1px solid rgba(255,255,255,0.1); }
+.collection-counter { position: absolute; top: 160px; right: 20px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 900; z-index: 10; border: 1px solid rgba(255,255,255,0.1); }
 .quick-share { position: absolute; bottom: 120px; right: 20px; z-index: 30; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; }
 
 [data-view="grid"] .snap-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; padding: 220px 0 80px; }
