@@ -16,7 +16,13 @@ let isFetching = false;
 // VIEW & THEME TOGGLES
 document.getElementById('viewToggle').onclick = () => {
     const current = document.documentElement.getAttribute('data-view');
-    document.documentElement.setAttribute('data-view', current === 'snap' ? 'grid' : 'snap');
+    const isNowGrid = current === 'snap';
+    document.documentElement.setAttribute('data-view', isNowGrid ? 'grid' : 'snap');
+    
+    // Fix: Dynamically update icon
+    const viewBtn = document.getElementById('viewToggle');
+    viewBtn.innerHTML = isNowGrid ? `<i data-lucide="smartphone"></i>` : `<i data-lucide="layout-grid"></i>`;
+    
     renderAll();
 };
 
@@ -25,7 +31,6 @@ document.getElementById('themeToggle').onclick = () => {
     document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
 };
 
-// SORTING LOGIC
 sortSelect.onchange = () => renderAll();
 
 async function fetchArt(isNew = false) {
@@ -54,15 +59,14 @@ function renderAll() {
     const viewMode = document.documentElement.getAttribute('data-view');
     let displayList = [...allNfts];
 
-    // Randomize for Snap Mode
+    // Randomized for TikTok feel
     if (viewMode === 'snap') {
         displayList = displayList.sort(() => Math.random() - 0.5);
     } 
     
-    // Sort for Grid Mode
     if (viewMode === 'grid') {
         const sortBy = sortSelect.value;
-        if (sortBy === 'project') displayList.sort((a, b) => a.collection.localeCompare(b.collection));
+        if (sortBy === 'project') displayList.sort((a, b) => (a.collection || "").localeCompare(b.collection || ""));
         if (sortBy === 'name') displayList.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     }
 
@@ -72,13 +76,7 @@ function renderAll() {
 
         const card = document.createElement('div');
         card.className = 'art-card';
-        card.innerHTML = `
-            <div class="img-frame"><img src="${img}" loading="lazy"></div>
-            ${viewMode === 'snap' ? `
-            <div class="action-bar">
-                <button class="action-btn" onclick="event.stopPropagation(); share('${nft.opensea_url}')"><i data-lucide="share-2"></i></button>
-            </div>` : ''}
-        `;
+        card.innerHTML = `<div class="img-frame"><img src="${img}" loading="lazy"></div>`;
         card.onclick = () => showDetails(nft.contract, nft.identifier);
         gallery.appendChild(card);
     });
@@ -92,21 +90,19 @@ async function showDetails(contract, id) {
         const res = await fetch(`/api/view?address=${contract}&id=${id}`);
         const data = await res.json();
         const nft = data.nft;
-        const eth = (Math.random() * 0.1).toFixed(3);
+        const eth = (Math.random() * 0.08).toFixed(3);
 
         modalData.innerHTML = `
-            <h2 style="font-size:24px; font-weight:900;">${nft.name || 'UNTITLED'}</h2>
-            <p style="opacity:0.5; font-size:10px; margin-bottom:20px;">${nft.collection.toUpperCase()}</p>
+            <h2 style="font-size:24px; font-weight:900; margin-bottom:5px;">${nft.name || 'UNTITLED'}</h2>
+            <p style="opacity:0.5; font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:20px;">${nft.collection}</p>
             <div style="margin-bottom:20px;">
                 <span style="font-size:32px; font-weight:900;">${eth} ETH</span>
             </div>
             <p style="font-size:14px; opacity:0.8; line-height:1.5;">${nft.description || 'Shape Original.'}</p>
-            <a href="${nft.opensea_url}" target="_blank" style="display:block; width:100%; padding:18px; background:var(--text); color:var(--bg); text-align:center; border-radius:12px; text-decoration:none; font-weight:900; margin-top:25px;">BUY ON OPENSEA</a>
+            <a href="${nft.opensea_url}" target="_blank" style="display:block; width:100%; padding:18px; background:var(--text); color:var(--bg); text-align:center; border-radius:12px; text-decoration:none; font-weight:900; margin-top:25px;">VIEW ON OPENSEA</a>
         `;
     } catch (e) { modalData.innerHTML = "<p>ERROR</p>"; }
 }
-
-window.share = (url) => { navigator.clipboard.writeText(url); alert("Link Copied!"); };
 
 btn.onclick = () => { currentWallet = input.value.trim(); fetchArt(true); };
 input.onkeydown = (e) => { if (e.key === 'Enter') { currentWallet = input.value.trim(); fetchArt(true); } };
