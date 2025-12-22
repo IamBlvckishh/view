@@ -8,18 +8,26 @@ header { position: fixed; top: 0; width: 100%; z-index: 100; padding: 15px 20px;
 .ui-hidden { transform: translateY(-100%); }
 #bottomNav.ui-hidden { transform: translateY(100%); }
 
-.logo-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-h1 { font-size: 22px; letter-spacing: 0.4em; font-weight: 900; flex-grow: 1; text-align: center; margin-left: 10px; }
-.icon-btn { background: none; border: none; color: var(--text); cursor: pointer; width: 40px; display: flex; justify-content: center; }
+.logo-row { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; position: relative; }
+h1 { font-size: 22px; letter-spacing: 0.5em; font-weight: 900; margin-left: 40px; }
+.icon-btn { background: none; border: none; color: var(--text); cursor: pointer; width: 40px; position: absolute; right: 0; }
 
-.search-box { background: var(--card); border-radius: 12px; padding: 0 15px; display: flex; border: 1px solid var(--border); }
-input { background: transparent; border: none; color: var(--text); flex: 1; padding: 12px 0; outline: none; }
+.search-box { background: var(--card); border-radius: 12px; padding: 0 15px; display: flex; border: 1px solid var(--border); margin-bottom: 10px; }
+input { background: transparent; border: none; color: var(--text); flex: 1; padding: 12px 0; outline: none; font-weight: 600; }
 
-#viewControls { margin-top: 10px; display: flex; justify-content: center; }
+#dynamicControls { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+#shuffleBtn { 
+    background: var(--border); border: none; color: var(--text); 
+    padding: 8px 16px; border-radius: 20px; font-size: 10px; 
+    font-weight: 900; display: flex; align-items: center; gap: 6px; cursor: pointer;
+}
+#shuffleBtn i { width: 14px; }
+
+#viewControls { display: flex; justify-content: center; }
 #sortSelect { background: transparent; color: var(--text); border: none; font-size: 10px; font-weight: 800; opacity: 0.6; outline: none; }
 
-/* Hide shuffle in grid mode, hide sort in snap mode */
-[data-view="grid"] #shuffleBtn { visibility: hidden; }
+/* Visibility Logic */
+[data-view="grid"] #shuffleBtn { display: none; }
 [data-view="snap"] #viewControls { display: none !important; }
 
 .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; padding: 10px 20px; border-radius: 20px; font-size: 12px; font-weight: 900; z-index: 1000; }
@@ -39,9 +47,10 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
 .collection-slide { flex: 0 0 100vw; height: 100vh; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; position: relative; }
 .collection-slide img { width: 100%; height: 100%; object-fit: contain; background: #000; }
 
-.collection-counter { position: absolute; top: 140px; right: 20px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 900; z-index: 10; border: 1px solid rgba(255,255,255,0.1); }
+.collection-counter { position: absolute; top: 180px; right: 20px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 900; z-index: 10; border: 1px solid rgba(255,255,255,0.1); }
+.quick-share { position: absolute; bottom: 120px; right: 20px; z-index: 30; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; }
 
-[data-view="grid"] .snap-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; padding: 180px 0 80px; }
+[data-view="grid"] .snap-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; padding: 220px 0 80px; }
 [data-view="grid"] .art-card { height: auto; width: 100%; aspect-ratio: 1/1; }
 [data-view="grid"] .art-card img { width: 100%; height: 100%; object-fit: cover; }
 
