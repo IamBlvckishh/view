@@ -1,93 +1,84 @@
-// Initialize Icons
 lucide.createIcons();
 
 const gallery = document.getElementById('gallery');
 const input = document.getElementById('walletInput');
 const btn = document.getElementById('goBtn');
-const status = document.getElementById('status');
+const loader = document.getElementById('loader');
+const emptyState = document.getElementById('empty-state');
 
 let continuation = null;
 let currentWallet = "";
 let isFetching = false;
 
-// The main function to get data from Shape
-async function fetchArt(isNewSearch = false) {
+async function fetchNFTs(isNew = false) {
     if (isFetching || !currentWallet) return;
     
     isFetching = true;
-    status.innerText = "Scanning...";
-
-    if (isNewSearch) {
+    loader.classList.remove('hidden');
+    if (isNew) {
         gallery.innerHTML = "";
-        continuation = null;
+        emptyState.style.display = "none";
     }
 
     try {
-        let url = `https://api-shape.reservoir.tools/users/${currentWallet}/tokens/v7?limit=10`;
-        if (continuation) url += `&continuation=${continuation}`;
+        // Updated Reservoir endpoint specifically for Shape
+        const baseUrl = `https://api-shape.reservoir.tools/users/${currentWallet}/tokens/v7`;
+        const url = continuation ? `${baseUrl}?continuation=${continuation}&limit=12` : `${baseUrl}?limit=12`;
 
         const response = await fetch(url);
+        
+        if (!response.ok) throw new Error('API request failed');
+
         const data = await response.json();
 
-        if (data.tokens.length === 0 && isNewSearch) {
-            status.innerText = "Empty Wallet";
-        } else {
-            renderTokens(data.tokens);
+        if (data.tokens && data.tokens.length > 0) {
+            render(data.tokens);
             continuation = data.continuation;
-            status.innerText = continuation ? "Keep Scrolling" : "End of View";
+        } else if (isNew) {
+            gallery.innerHTML = '<p style="text-align:center;color:#555">No tokens found in this wallet.</p>';
         }
     } catch (err) {
-        status.innerText = "Error Connecting";
         console.error(err);
+        alert("Failed to load tokens. Check the address or try again.");
     } finally {
         isFetching = false;
+        loader.classList.add('hidden');
     }
 }
 
-function renderTokens(tokens) {
+function render(tokens) {
     tokens.forEach(item => {
+        const t = item.token;
         const card = document.createElement('div');
-        card.className = 'art-card';
-        
-        const imgSrc = item.token.image || 'https://via.placeholder.com/500x500?text=No+Image';
-        const name = item.token.name || `#${item.token.tokenId.slice(0, 5)}`;
-        
+        card.className = 'nft-card';
         card.innerHTML = `
-            <div class="image-wrapper">
-                <img src="${imgSrc}" loading="lazy">
+            <div class="img-frame">
+                <img src="${t.image || 'https://via.placeholder.com/600x600?text=Shape+NFT'}" alt="">
             </div>
             <div class="meta">
-                <div class="art-name">${name}</div>
-                <div class="collection-name">${item.token.collection.name}</div>
+                <div class="nft-name">${t.name || '#' + t.tokenId.slice(0,5)}</div>
+                <div class="collection">${t.collection.name}</div>
             </div>
         `;
         gallery.appendChild(card);
-        
-        // Trigger the fade-in animation
-        setTimeout(() => card.classList.add('visible'), 100);
     });
-    lucide.createIcons();
 }
 
-// --- DOOMSCROLL TRIGGER ---
+// Doomscroll Logic
 window.onscroll = () => {
-    // If user is near the bottom of the page
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
-        if (continuation && !isFetching) {
-            fetchArt();
-        }
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 1000) {
+        if (continuation && !isFetching) fetchNFTs();
     }
 };
 
-// Search Interactions
 btn.onclick = () => {
     currentWallet = input.value.trim();
-    fetchArt(true);
+    if (currentWallet) fetchNFTs(true);
 };
 
 input.onkeydown = (e) => {
     if (e.key === 'Enter') {
         currentWallet = input.value.trim();
-        fetchArt(true);
+        fetchNFTs(true);
     }
 };
