@@ -26,8 +26,11 @@ gallery.addEventListener('touchend', e => {
 
 gallery.onscroll = () => {
     const cur = gallery.scrollTop;
-    if (cur > lastScrollY && cur > 100) { header.classList.add('ui-hidden'); bottomNav.classList.add('ui-hidden'); }
-    else { header.classList.remove('ui-hidden'); bottomNav.classList.remove('ui-hidden'); }
+    // Only hide UI in Snap view. Keep UI visible in Grid to use search/sort
+    if (document.documentElement.getAttribute('data-view') === 'snap') {
+        if (cur > lastScrollY && cur > 100) { header.classList.add('ui-hidden'); bottomNav.classList.add('ui-hidden'); }
+        else { header.classList.remove('ui-hidden'); bottomNav.classList.remove('ui-hidden'); }
+    }
     lastScrollY = cur;
     if (gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight - 1000 && continuation && !isFetching) fetchArt();
 };
@@ -40,7 +43,13 @@ async function fetchArt(isNew = false) {
     try {
         const res = await fetch(`/api/view?wallet=${currentWallet}${continuation ? `&next=${continuation}` : ''}`);
         const data = await res.json();
-        if (data.nfts) { allNfts = [...allNfts, ...data.nfts]; continuation = data.next; dynamicControls.classList.remove('hidden'); bottomNav.classList.remove('hidden'); renderAll(); }
+        if (data.nfts) { 
+            allNfts = [...allNfts, ...data.nfts]; 
+            continuation = data.next; 
+            dynamicControls.classList.remove('hidden'); 
+            bottomNav.classList.remove('hidden'); 
+            renderAll(); 
+        }
     } catch (e) {} finally { isFetching = false; }
 }
 
@@ -133,6 +142,10 @@ function switchView(mode) {
     document.documentElement.setAttribute('data-view', mode);
     document.getElementById('navHome').classList.toggle('active', mode === 'snap');
     document.getElementById('navGrid').classList.toggle('active', mode === 'grid');
+    
+    // Always show UI in grid mode
+    if (mode === 'grid') { header.classList.remove('ui-hidden'); bottomNav.classList.remove('ui-hidden'); }
+    
     gridSearchInput.value = ""; gallery.scrollTo(0,0); renderAll();
 }
 document.getElementById('navHome').onclick = () => switchView('snap');
