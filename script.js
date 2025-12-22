@@ -52,6 +52,7 @@ document.getElementById('navHome').onclick = () => switchView('snap');
 document.getElementById('navGrid').onclick = () => switchView('grid');
 sortSelect.onchange = () => renderAll();
 
+// THEME TOGGLE
 document.getElementById('themeToggle').onclick = () => {
     const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', theme);
@@ -63,7 +64,7 @@ async function fetchArt(isNew = false) {
     currentWallet = input.value.trim();
     if (!currentWallet || isFetching) return;
     isFetching = true;
-    if (isNew) { allNfts = []; continuation = null; }
+    if (isNew) { allNfts = []; continuation = null; gallery.innerHTML = ""; }
     try {
         const res = await fetch(`/api/view?wallet=${currentWallet}${continuation ? `&next=${continuation}` : ''}`);
         const data = await res.json();
@@ -107,26 +108,23 @@ async function showDetails(contract, id) {
         const data = await res.json(), nft = data.nft;
         sBtn.onclick = () => share(nft.opensea_url);
         
-        mData.innerHTML = `<h2 style="font-size:24px; font-weight:900;">${nft.name || 'UNTITLED'}</h2>
+        // STANDARD TAB OPEN: Simple anchor tag with target="_blank"
+        mData.innerHTML = `
+            <h2 style="font-size:24px; font-weight:900;">${nft.name || 'UNTITLED'}</h2>
             <p style="opacity:0.5; font-size:10px; margin-bottom:15px;">${nft.collection.toUpperCase()}</p>
             <p style="font-size:14px; opacity:0.8; line-height:1.5;">${nft.description || 'No description.'}</p>
-            <button id="bgOpenBtn" style="display:block; width:100%; padding:18px; background:var(--text); color:var(--bg); text-align:center; border-radius:12px; border:none; font-weight:900; margin-top:25px; cursor:pointer;">VIEW ON OPENSEA</button>
-            <p id="tabStatus" style="font-size:10px; text-align:center; margin-top:10px; opacity:0; transition:opacity 0.3s; color:var(--accent); font-weight:700;">OPENED IN TAB</p>`;
-        
-        document.getElementById('bgOpenBtn').onclick = () => {
-            window.open(nft.opensea_url, '_blank');
-            const status = document.getElementById('tabStatus');
-            status.style.opacity = "1";
-            setTimeout(() => { status.style.opacity = "0"; }, 2000);
-            window.focus(); // Try to keep focus on app
-        };
-    } catch (e) { }
+            <a href="${nft.opensea_url}" target="_blank" rel="noopener noreferrer" style="display:block; width:100%; padding:18px; background:var(--text); color:var(--bg); text-align:center; border-radius:12px; border:none; font-weight:900; margin-top:25px; text-decoration: none;">
+                VIEW ON OPENSEA
+            </a>
+        `;
+    } catch (e) { mData.innerHTML = "<p>Error loading NFT details.</p>"; }
     lucide.createIcons();
 }
 
 window.share = (url) => {
-    if (navigator.share) navigator.share({ title: 'VIEW', url: url });
-    else {
+    if (navigator.share) {
+        navigator.share({ title: 'VIEW', url: url }).catch(() => {});
+    } else {
         navigator.clipboard.writeText(url);
         const toast = document.getElementById('toast');
         toast.classList.remove('hidden');
@@ -137,3 +135,4 @@ window.share = (url) => {
 document.getElementById('goBtn').onclick = () => fetchArt(true);
 input.onkeydown = (e) => { if (e.key === 'Enter') fetchArt(true); };
 document.querySelector('.close-btn').onclick = () => modal.classList.add('hidden');
+document.querySelector('.modal-overlay').onclick = () => modal.classList.add('hidden');
