@@ -2,7 +2,7 @@ lucide.createIcons();
 const gallery = document.getElementById('gallery'), input = document.getElementById('walletInput');
 const header = document.getElementById('mainHeader'), bottomNav = document.getElementById('bottomNav');
 const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect');
-const dynamicControls = document.getElementById('dynamicControls');
+const dynamicControls = document.getElementById('dynamicControls'), backToTopBtn = document.getElementById('backToTop');
 
 let allNfts = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
 let touchStartX = 0, touchStartY = 0;
@@ -23,7 +23,6 @@ gallery.addEventListener('touchstart', e => {
 
 gallery.addEventListener('touchend', e => {
     const xDiff = e.changedTouches[0].screenX - touchStartX;
-    // Switch to home on left-to-right swipe in Grid
     if (document.documentElement.getAttribute('data-view') === 'grid' && xDiff > 100 && Math.abs(e.changedTouches[0].screenY - touchStartY) < 50) switchView('snap');
 }, {passive: true});
 
@@ -31,12 +30,18 @@ gallery.onscroll = () => {
     const cur = gallery.scrollTop;
     if (cur > lastScrollY && cur > 100) hideUI();
     else if (cur < lastScrollY) showUI();
+    
+    if (cur > 500) backToTopBtn.classList.remove('hidden');
+    else backToTopBtn.classList.add('hidden');
+
     lastScrollY = cur;
     if (gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight - 1000 && continuation && !isFetching) fetchArt();
 };
 
 function hideUI() { header.classList.add('ui-hidden'); bottomNav.classList.add('ui-hidden'); }
 function showUI() { header.classList.remove('ui-hidden'); bottomNav.classList.remove('ui-hidden'); }
+
+backToTopBtn.onclick = () => gallery.scrollTo({ top: 0, behavior: 'smooth' });
 
 async function fetchArt(isNew = false) {
     currentWallet = input.value.trim();
@@ -66,13 +71,7 @@ function renderAll() {
         Object.keys(groups).sort(() => Math.random() - 0.5).forEach(k => {
             const items = groups[k], card = document.createElement('div'), slider = document.createElement('div');
             card.className = 'art-card'; slider.className = 'collection-slider';
-            
-            // HIDE UI ON SWIPE RIGHT WITHIN COLLECTION
-            slider.addEventListener('touchstart', () => {}, {passive: true});
-            slider.addEventListener('scroll', () => { hideUI(); }, {passive: true});
-
-            if (items.length > 1) slider.onscroll = (e) => { hideUI(); checkEndSwipe(e.target); };
-            else slider.ontouchend = (e) => { if (touchStartX - e.changedTouches[0].screenX > 80) switchView('grid'); };
+            slider.onscroll = () => { hideUI(); checkEndSwipe(slider); };
             
             items.forEach((n, idx) => {
                 const s = document.createElement('div'); s.className = 'collection-slide';
@@ -91,7 +90,6 @@ function renderAll() {
                 gallery.appendChild(createGridCard(n));
             });
         } else if (sort === 'artist') {
-            // Sort by creator/artist
             list.sort((a,b) => (a.creator||"").localeCompare(b.creator||""));
             let lastA = ""; list.forEach(n => {
                 if (n.creator !== lastA) { appendHeader(n.creator || "UNKNOWN ARTIST"); lastA = n.creator; }
@@ -157,8 +155,7 @@ function switchView(mode) {
     document.documentElement.setAttribute('data-view', mode);
     document.getElementById('navHome').classList.toggle('active', mode === 'snap');
     document.getElementById('navGrid').classList.toggle('active', mode === 'grid');
-    showUI();
-    gallery.scrollTo(0,0); renderAll();
+    showUI(); backToTopBtn.classList.add('hidden'); gallery.scrollTo(0,0); renderAll();
 }
 document.getElementById('navHome').onclick = () => switchView('snap');
 document.getElementById('navGrid').onclick = () => switchView('grid');
