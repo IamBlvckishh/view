@@ -34,7 +34,6 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
 .snap-container { height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; }
 [data-view="grid"] .snap-container { scroll-snap-type: none; overflow-y: auto; touch-action: pan-y pan-x; }
 
-/* Transition Animation Class */
 .view-slide-in { animation: slideIn 0.3s cubic-bezier(0.1, 0.7, 1.0, 0.1); }
 @keyframes slideIn {
     from { transform: translateX(30px); opacity: 0; }
