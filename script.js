@@ -18,7 +18,7 @@ document.getElementById('shuffleBtn').onclick = () => {
     gallery.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// UNIVERSAL SWIPE LOGIC (Grid to Home)
+// UNIVERSAL SWIPE (Grid to Home)
 gallery.addEventListener('touchstart', e => { 
     touchStartX = e.changedTouches[0].screenX; 
     touchStartY = e.changedTouches[0].screenY;
@@ -80,7 +80,16 @@ function renderAll() {
             card.className = 'art-card';
             const slider = document.createElement('div');
             slider.className = 'collection-slider';
-            slider.onscroll = (e) => checkEndSwipe(e.target);
+            
+            // For multi-item: use scroll logic. For 1/1s: use direct touch logic.
+            if (items.length > 1) {
+                slider.onscroll = (e) => checkEndSwipe(e.target);
+            } else {
+                slider.addEventListener('touchend', (e) => {
+                    const diff = touchStartX - e.changedTouches[0].screenX;
+                    if (diff > 80) switchView('grid');
+                }, {passive: true});
+            }
 
             items.forEach((nft, idx) => {
                 const slide = document.createElement('div');
@@ -115,8 +124,7 @@ function checkEndSwipe(el) {
     const isAtEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 5;
     if (isAtEnd) {
         el.addEventListener('touchend', (e) => {
-            const touchEndX = e.changedTouches[0].screenX;
-            const diff = touchStartX - touchEndX;
+            const diff = touchStartX - e.changedTouches[0].screenX;
             if (diff > 80 && document.documentElement.getAttribute('data-view') === 'snap') {
                 switchView('grid');
             }
@@ -158,9 +166,8 @@ document.querySelector('.close-btn').onclick = () => modal.classList.add('hidden
 document.querySelector('.modal-overlay').onclick = () => modal.classList.add('hidden');
 
 function switchView(mode) {
-    // Apply animation class
     gallery.classList.remove('view-slide-in');
-    void gallery.offsetWidth; // Trigger reflow to restart animation
+    void gallery.offsetWidth; 
     gallery.classList.add('view-slide-in');
     
     document.documentElement.setAttribute('data-view', mode);
