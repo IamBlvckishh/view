@@ -24,12 +24,15 @@ gallery.addEventListener('touchend', e => {
     if (document.documentElement.getAttribute('data-view') === 'grid' && xDiff > 100 && Math.abs(e.changedTouches[0].screenY - touchStartY) < 50) switchView('snap');
 }, {passive: true});
 
+// SHARED SCROLL LOGIC FOR BOTH VIEWS
 gallery.onscroll = () => {
     const cur = gallery.scrollTop;
-    // Only hide UI in Snap view. Keep UI visible in Grid to use search/sort
-    if (document.documentElement.getAttribute('data-view') === 'snap') {
-        if (cur > lastScrollY && cur > 100) { header.classList.add('ui-hidden'); bottomNav.classList.add('ui-hidden'); }
-        else { header.classList.remove('ui-hidden'); bottomNav.classList.remove('ui-hidden'); }
+    if (cur > lastScrollY && cur > 100) { 
+        header.classList.add('ui-hidden'); 
+        bottomNav.classList.add('ui-hidden'); 
+    } else { 
+        header.classList.remove('ui-hidden'); 
+        bottomNav.classList.remove('ui-hidden'); 
     }
     lastScrollY = cur;
     if (gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight - 1000 && continuation && !isFetching) fetchArt();
@@ -143,8 +146,9 @@ function switchView(mode) {
     document.getElementById('navHome').classList.toggle('active', mode === 'snap');
     document.getElementById('navGrid').classList.toggle('active', mode === 'grid');
     
-    // Always show UI in grid mode
-    if (mode === 'grid') { header.classList.remove('ui-hidden'); bottomNav.classList.remove('ui-hidden'); }
+    // UI resets when switching
+    header.classList.remove('ui-hidden'); 
+    bottomNav.classList.remove('ui-hidden');
     
     gridSearchInput.value = ""; gallery.scrollTo(0,0); renderAll();
 }
