@@ -13,21 +13,24 @@
         <div class="header-content">
             <div class="nav-top">
                 <h1>VIEW</h1>
-                <div class="controls">
+                <div id="viewControls" class="hidden">
+                    <select id="sortSelect">
+                        <option value="none">SORT: DEFAULT</option>
+                        <option value="project">BY PROJECT</option>
+                        <option value="name">BY NAME</option>
+                    </select>
                     <button id="viewToggle"><i data-lucide="layout-grid"></i></button>
                     <button id="themeToggle"><i data-lucide="sun"></i></button>
                 </div>
             </div>
             <div class="search-box">
-                <input type="text" id="walletInput" placeholder="0x... or .eth name">
+                <input type="text" id="walletInput" placeholder="ENTER 0x ADDRESS">
                 <button id="goBtn"><i data-lucide="arrow-right"></i></button>
             </div>
         </div>
     </header>
 
     <main id="gallery" class="snap-container"></main>
-
-    <button id="backToTop" class="hidden"><i data-lucide="arrow-up"></i></button>
 
     <div id="detailModal" class="modal hidden">
         <div class="modal-overlay"></div>
@@ -39,7 +42,7 @@
     </div>
 
     <footer>
-        <p>© 2025 VIEW | Released under <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a></p>
+        <p>© 2025 VIEW | <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a></p>
     </footer>
 
     <script src="script.js"></script>
