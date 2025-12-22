@@ -8,11 +8,15 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+
     <header>
         <div class="header-content">
-            <h1>VIEW</h1>
-            <div class="search-container">
-                <input type="text" id="walletInput" placeholder="0x... address">
+            <div class="brand">
+                <h1>VIEW</h1>
+                <div class="badge">SHAPE L2</div>
+            </div>
+            <div class="search-box">
+                <input type="text" id="walletInput" placeholder="0x... or .eth name">
                 <button id="goBtn"><i data-lucide="arrow-right"></i></button>
             </div>
         </div>
@@ -20,7 +24,7 @@
 
     <main id="gallery"></main>
 
-    <div id="status"></div> 
+    <div id="status">READY TO VIEW</div>
 
     <div id="loader" class="hidden">
         <div class="spinner"></div>
