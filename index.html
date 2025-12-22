@@ -16,26 +16,28 @@
                 <h1>VIEW</h1>
                 <button id="themeToggle" class="icon-btn"><i data-lucide="sun"></i></button>
             </div>
+            
             <div class="search-box">
                 <input type="text" id="walletInput" placeholder="ENTER 0x ADDRESS">
                 <button id="goBtn"><i data-lucide="arrow-right"></i></button>
             </div>
             
             <div id="dynamicControls" class="hidden">
-                <button id="shuffleBtn"><i data-lucide="shuffle"></i> SHUFFLE FEED</button>
-                
                 <div id="gridSearchContainer" class="hidden">
                     <div class="search-box grid-sub-search">
                         <input type="text" id="gridSearchInput" placeholder="SEARCH COLLECTION...">
                     </div>
                 </div>
 
-                <div id="viewControls">
-                    <select id="sortSelect">
-                        <option value="none">SORT: DEFAULT</option>
-                        <option value="project">BY PROJECT</option>
-                        <option value="name">BY NAME</option>
-                    </select>
+                <div class="controls-row">
+                    <button id="shuffleBtn"><i data-lucide="shuffle"></i> SHUFFLE FEED</button>
+                    <div id="viewControls">
+                        <select id="sortSelect">
+                            <option value="none">SORT: DEFAULT</option>
+                            <option value="project">BY PROJECT</option>
+                            <option value="name">BY NAME</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
