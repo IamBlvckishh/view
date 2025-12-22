@@ -12,6 +12,27 @@ let currentWallet = "";
 let isFetching = false;
 let lastScrollY = 0;
 
+// PULL TO REFRESH LOGIC
+let touchstartY = 0;
+gallery.addEventListener('touchstart', e => {
+    touchstartY = e.touches[0].pageY;
+}, { passive: true });
+
+gallery.addEventListener('touchmove', e => {
+    const touchY = e.touches[0].pageY;
+    const pullDistance = touchY - touchstartY;
+    if (gallery.scrollTop <= 0 && pullDistance > 80) {
+        document.body.classList.add('pulling');
+    }
+}, { passive: true });
+
+gallery.addEventListener('touchend', e => {
+    if (document.body.classList.contains('pulling')) {
+        document.body.classList.remove('pulling');
+        if (allNfts.length > 0) renderAll(); // Re-randomize
+    }
+}, { passive: true });
+
 // HIDE UI ON SCROLL
 gallery.onscroll = () => {
     const currentScroll = gallery.scrollTop;
@@ -23,7 +44,6 @@ gallery.onscroll = () => {
         bottomNav.classList.remove('ui-hidden');
     }
     lastScrollY = currentScroll;
-
     if (gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight - 1000) {
         if (continuation && !isFetching) fetchArt();
     }
@@ -72,7 +92,6 @@ async function fetchArt(isNew = false) {
         if (data.nfts) {
             allNfts = [...allNfts, ...data.nfts];
             continuation = data.next;
-            document.getElementById('viewControls').classList.remove('hidden');
             bottomNav.classList.remove('hidden');
             renderAll();
         }
@@ -82,6 +101,7 @@ async function fetchArt(isNew = false) {
 function renderAll() {
     gallery.innerHTML = "";
     const mode = document.documentElement.getAttribute('data-view');
+    // Randomize for Snap view
     let list = (mode === 'snap') ? [...allNfts].sort(() => Math.random() - 0.5) : [...allNfts];
 
     list.forEach(nft => {
