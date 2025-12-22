@@ -3,35 +3,35 @@ lucide.createIcons();
 const gallery = document.getElementById('gallery');
 const input = document.getElementById('walletInput');
 const btn = document.getElementById('goBtn');
-const themeBtn = document.getElementById('themeToggle');
-const viewBtn = document.getElementById('viewToggle');
-const topBtn = document.getElementById('backToTop');
+const viewControls = document.getElementById('viewControls');
+const sortSelect = document.getElementById('sortSelect');
 const modal = document.getElementById('detailModal');
 const modalData = document.getElementById('modalData');
 
+let allNfts = [];
 let continuation = null;
 let currentWallet = "";
 let isFetching = false;
-let favorites = JSON.parse(localStorage.getItem('view_favs')) || [];
 
-// ENS RESOLVER
-async function resolveENS(name) {
-    const clean = name.trim().toLowerCase();
-    if (clean.startsWith('0x') && clean.length === 42) return clean;
-    if (clean.endsWith('.eth')) {
-        try {
-            const res = await fetch(`https://api.ensoul.xyz/resolve/${clean}`);
-            const data = await res.json();
-            return data.address || null;
-        } catch (e) { return null; }
-    }
-    return null;
-}
+// VIEW & THEME TOGGLES
+document.getElementById('viewToggle').onclick = () => {
+    const current = document.documentElement.getAttribute('data-view');
+    document.documentElement.setAttribute('data-view', current === 'snap' ? 'grid' : 'snap');
+    renderAll();
+};
+
+document.getElementById('themeToggle').onclick = () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+};
+
+// SORTING LOGIC
+sortSelect.onchange = () => renderAll();
 
 async function fetchArt(isNew = false) {
     if (!currentWallet || isFetching) return;
     isFetching = true;
-    if (isNew) { gallery.innerHTML = ""; continuation = null; gallery.scrollTop = 0; }
+    if (isNew) { allNfts = []; continuation = null; }
 
     try {
         let url = `/api/view?wallet=${currentWallet}`;
@@ -40,130 +40,81 @@ async function fetchArt(isNew = false) {
         const data = await res.json();
 
         if (data.nfts) {
-            data.nfts.forEach(nft => renderCard(nft));
+            allNfts = [...allNfts, ...data.nfts];
             continuation = data.next;
+            viewControls.classList.remove('hidden');
+            renderAll();
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { alert("Address Error"); }
     finally { isFetching = false; }
 }
 
-function renderCard(nft) {
-    const img = nft.image_url || nft.display_image_url;
-    if (!img) return;
+function renderAll() {
+    gallery.innerHTML = "";
+    const viewMode = document.documentElement.getAttribute('data-view');
+    let displayList = [...allNfts];
 
-    const card = document.createElement('div');
-    card.className = 'art-card';
-    card.innerHTML = `
-        <div class="img-frame"><img src="${img}" loading="lazy"></div>
-        <div class="action-bar">
-            <button class="action-btn like-trigger" onclick="event.stopPropagation(); toggleLike(this)">
-                <i data-lucide="heart"></i>
-            </button>
-            <button class="action-btn" onclick="event.stopPropagation(); toggleFav('${nft.identifier}')">
-                <i data-lucide="bookmark"></i>
-            </button>
-            <button class="action-btn" onclick="event.stopPropagation(); shareNFT('${nft.opensea_url}')">
-                <i data-lucide="share-2"></i>
-            </button>
-        </div>
-    `;
-    card.onclick = () => showDetails(nft.contract, nft.identifier);
-    gallery.appendChild(card);
+    // Randomize for Snap Mode
+    if (viewMode === 'snap') {
+        displayList = displayList.sort(() => Math.random() - 0.5);
+    } 
+    
+    // Sort for Grid Mode
+    if (viewMode === 'grid') {
+        const sortBy = sortSelect.value;
+        if (sortBy === 'project') displayList.sort((a, b) => a.collection.localeCompare(b.collection));
+        if (sortBy === 'name') displayList.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    }
+
+    displayList.forEach(nft => {
+        const img = nft.image_url || nft.display_image_url;
+        if (!img) return;
+
+        const card = document.createElement('div');
+        card.className = 'art-card';
+        card.innerHTML = `
+            <div class="img-frame"><img src="${img}" loading="lazy"></div>
+            ${viewMode === 'snap' ? `
+            <div class="action-bar">
+                <button class="action-btn" onclick="event.stopPropagation(); share('${nft.opensea_url}')"><i data-lucide="share-2"></i></button>
+            </div>` : ''}
+        `;
+        card.onclick = () => showDetails(nft.contract, nft.identifier);
+        gallery.appendChild(card);
+    });
     lucide.createIcons();
 }
 
-// SOCIAL ACTIONS
-window.toggleLike = (btn) => {
-    btn.classList.toggle('liked');
-    const icon = btn.querySelector('i');
-    if (btn.classList.contains('liked')) {
-        icon.setAttribute('data-lucide', 'heart');
-        icon.style.fill = "#ff3b3b";
-    } else {
-        icon.style.fill = "none";
-    }
-    lucide.createIcons();
-};
-
-window.toggleFav = (id) => {
-    if (favorites.includes(id)) {
-        favorites = favorites.filter(f => f !== id);
-        alert("Removed from favorites");
-    } else {
-        favorites.push(id);
-        alert("Saved to favorites!");
-    }
-    localStorage.setItem('view_favs', JSON.stringify(favorites));
-};
-
-window.shareNFT = (url) => {
-    if (navigator.share) {
-        navigator.share({ title: 'Check this on VIEW', url: url });
-    } else {
-        navigator.clipboard.writeText(url);
-        alert("Link copied to clipboard!");
-    }
-};
-
 async function showDetails(contract, id) {
     modal.classList.remove('hidden');
-    modalData.innerHTML = `<p style="text-align:center; padding:50px;">LOADING DATA...</p>`;
+    modalData.innerHTML = `<p style="text-align:center; padding:50px;">LOADING...</p>`;
     try {
         const res = await fetch(`/api/view?address=${contract}&id=${id}`);
         const data = await res.json();
         const nft = data.nft;
-        const eth = (Math.random() * 0.12).toFixed(3); // Mock live price
+        const eth = (Math.random() * 0.1).toFixed(3);
 
         modalData.innerHTML = `
-            <span style="font-size:10px; font-weight:800; opacity:0.5;">${nft.collection.toUpperCase()}</span>
-            <h2 style="font-size:28px; font-weight:900; margin:10px 0;">${nft.name || 'UNTITLED'}</h2>
-            <div style="margin:20px 0;">
-                <span style="font-size:36px; font-weight:900;">${eth} ETH</span>
-                <p style="color:#888;">Approx. $${(eth * 2450).toLocaleString()}</p>
+            <h2 style="font-size:24px; font-weight:900;">${nft.name || 'UNTITLED'}</h2>
+            <p style="opacity:0.5; font-size:10px; margin-bottom:20px;">${nft.collection.toUpperCase()}</p>
+            <div style="margin-bottom:20px;">
+                <span style="font-size:32px; font-weight:900;">${eth} ETH</span>
             </div>
-            <p style="line-height:1.6; opacity:0.8; font-size:14px;">${nft.description || 'No description provided.'}</p>
-            <a href="${nft.opensea_url}" target="_blank" style="display:block; width:100%; padding:20px; background:var(--text); color:var(--bg); text-align:center; border-radius:15px; text-decoration:none; font-weight:900; margin-top:30px;">BUY ON OPENSEA</a>
+            <p style="font-size:14px; opacity:0.8; line-height:1.5;">${nft.description || 'Shape Original.'}</p>
+            <a href="${nft.opensea_url}" target="_blank" style="display:block; width:100%; padding:18px; background:var(--text); color:var(--bg); text-align:center; border-radius:12px; text-decoration:none; font-weight:900; margin-top:25px;">BUY ON OPENSEA</a>
         `;
     } catch (e) { modalData.innerHTML = "<p>ERROR</p>"; }
 }
 
-// UI HANDLERS
-viewBtn.onclick = () => {
-    const isSnap = document.documentElement.getAttribute('data-view') === 'snap';
-    document.documentElement.setAttribute('data-view', isSnap ? 'grid' : 'snap');
-    viewBtn.innerHTML = `<i data-lucide="${isSnap ? 'layout-grid' : 'smartphone'}"></i>`;
-    lucide.createIcons();
-};
+window.share = (url) => { navigator.clipboard.writeText(url); alert("Link Copied!"); };
 
-themeBtn.onclick = () => {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    themeBtn.innerHTML = `<i data-lucide="${isDark ? 'moon' : 'sun'}"></i>`;
-    lucide.createIcons();
-};
-
-topBtn.onclick = () => gallery.scrollTo({ top: 0, behavior: 'smooth' });
+btn.onclick = () => { currentWallet = input.value.trim(); fetchArt(true); };
+input.onkeydown = (e) => { if (e.key === 'Enter') { currentWallet = input.value.trim(); fetchArt(true); } };
+document.querySelector('.close-btn').onclick = () => modal.classList.add('hidden');
+document.querySelector('.modal-overlay').onclick = () => modal.classList.add('hidden');
 
 gallery.onscroll = () => {
-    // Show/Hide Back to Top
-    if (gallery.scrollTop > 1000) topBtn.classList.remove('hidden');
-    else topBtn.classList.add('hidden');
-
-    // Infinite Scroll
-    if (gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight - 600) {
+    if (gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight - 800) {
         if (continuation && !isFetching) fetchArt();
     }
 };
-
-async function startSearch() {
-    const raw = input.value.trim();
-    if (!raw) return;
-    currentWallet = await resolveENS(raw);
-    if (!currentWallet) { alert("Invalid Address"); return; }
-    fetchArt(true);
-}
-
-btn.onclick = startSearch;
-input.onkeydown = (e) => { if (e.key === 'Enter') startSearch(); };
-document.querySelector('.close-btn').onclick = () => modal.classList.add('hidden');
-document.querySelector('.modal-overlay').onclick = () => modal.classList.add('hidden');
