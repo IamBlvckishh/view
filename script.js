@@ -106,15 +106,12 @@ async function showDetails(contract, id) {
         const res = await fetch(`/api/view?address=${contract}&id=${id}`);
         const data = await res.json(), nft = data.nft;
         sBtn.onclick = () => share(nft.opensea_url);
+        
+        // Use a real anchor tag with target="_blank" for the OpenSea link
         mData.innerHTML = `<h2 style="font-size:24px; font-weight:900;">${nft.name || 'UNTITLED'}</h2>
             <p style="opacity:0.5; font-size:10px; margin-bottom:15px;">${nft.collection.toUpperCase()}</p>
             <p style="font-size:14px; opacity:0.8; line-height:1.5;">${nft.description || 'No description.'}</p>
-            <button id="openExternal" style="display:block; width:100%; padding:18px; background:var(--text); color:var(--bg); text-align:center; border-radius:12px; border:none; font-weight:900; margin-top:25px;">VIEW ON OPENSEA</button>`;
-        
-        document.getElementById('openExternal').onclick = () => {
-            // Open in a focused popup that keeps the user context
-            window.open(nft.opensea_url, '_blank', 'noopener,noreferrer');
-        };
+            <a href="${nft.opensea_url}" target="_blank" rel="noopener noreferrer" style="display:block; width:100%; padding:18px; background:var(--text); color:var(--bg); text-align:center; border-radius:12px; text-decoration:none; font-weight:900; margin-top:25px;">VIEW ON OPENSEA</a>`;
     } catch (e) { }
     lucide.createIcons();
 }
