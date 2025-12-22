@@ -16,8 +16,8 @@
                 <button id="themeToggle"><i data-lucide="sun"></i></button>
             </div>
             <div class="search-box">
-                <input type="text" id="walletInput" placeholder="ENTER 0x ADDRESS">
-                <button id="goBtn"><i data-lucide="search"></i></button>
+                <input type="text" id="walletInput" placeholder="PASTE 0x ADDRESS">
+                <button id="goBtn"><i data-lucide="arrow-right"></i></button>
             </div>
         </div>
     </header>
@@ -25,13 +25,13 @@
     <main id="gallery" class="snap-container"></main>
 
     <div id="detailModal" class="modal hidden">
+        <div class="modal-overlay"></div>
         <div class="modal-content">
+            <div class="handle"></div>
             <button class="close-btn"><i data-lucide="x"></i></button>
             <div id="modalData"></div>
         </div>
     </div>
-
-    <div id="loader" class="hidden"><div class="spinner"></div></div>
 
     <script src="script.js"></script>
 </body>
