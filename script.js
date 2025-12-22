@@ -1,17 +1,8 @@
 lucide.createIcons();
-
-const gallery = document.getElementById('gallery');
-const input = document.getElementById('walletInput');
-const header = document.getElementById('mainHeader');
-const bottomNav = document.getElementById('bottomNav');
-const modal = document.getElementById('detailModal');
-const sortSelect = document.getElementById('sortSelect');
-
-let allNfts = [];
-let continuation = null;
-let currentWallet = "";
-let isFetching = false;
-let lastScrollY = 0;
+const gallery = document.getElementById('gallery'), input = document.getElementById('walletInput');
+const header = document.getElementById('mainHeader'), bottomNav = document.getElementById('bottomNav');
+const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect');
+let allNfts = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
 
 // REFRESH GESTURE
 let touchstartY = 0;
@@ -31,11 +22,9 @@ gallery.addEventListener('touchend', () => {
 gallery.onscroll = () => {
     const currentScroll = gallery.scrollTop;
     if (currentScroll > lastScrollY && currentScroll > 100) {
-        header.classList.add('ui-hidden');
-        bottomNav.classList.add('ui-hidden');
+        header.classList.add('ui-hidden'); bottomNav.classList.add('ui-hidden');
     } else {
-        header.classList.remove('ui-hidden');
-        bottomNav.classList.remove('ui-hidden');
+        header.classList.remove('ui-hidden'); bottomNav.classList.remove('ui-hidden');
     }
     lastScrollY = currentScroll;
     if (gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight - 1000) {
@@ -80,7 +69,6 @@ async function fetchArt(isNew = false) {
     if (!currentWallet || isFetching) return;
     isFetching = true;
     if (isNew) { allNfts = []; continuation = null; }
-
     try {
         const res = await fetch(`/api/view?wallet=${currentWallet}${continuation ? `&next=${continuation}` : ''}`);
         const data = await res.json();
@@ -97,26 +85,18 @@ async function fetchArt(isNew = false) {
 function renderAll() {
     gallery.innerHTML = "";
     const mode = document.documentElement.getAttribute('data-view');
-    let list = [...allNfts];
-
-    if (mode === 'snap') {
-        list.sort(() => Math.random() - 0.5);
-    } else {
+    let list = (mode === 'snap') ? [...allNfts].sort(() => Math.random() - 0.5) : [...allNfts];
+    if (mode === 'grid') {
         if (sortSelect.value === 'project') list.sort((a, b) => (a.collection || "").localeCompare(b.collection || ""));
         if (sortSelect.value === 'name') list.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     }
-
     list.forEach(nft => {
         const img = nft.image_url || nft.display_image_url;
         if (!img) return;
         const card = document.createElement('div');
         card.className = 'art-card';
-        card.innerHTML = `
-            <div class="img-frame"><img src="${img}" loading="lazy"></div>
-            <button class="share-action" onclick="event.stopPropagation(); share('${nft.opensea_url}')">
-                <i data-lucide="share-2"></i>
-            </button>
-        `;
+        card.innerHTML = `<div class="img-frame"><img src="${img}" loading="lazy"></div>
+            ${mode === 'snap' ? `<button class="share-action" onclick="event.stopPropagation(); share('${nft.opensea_url}')"><i data-lucide="share-2"></i></button>` : ''}`;
         card.onclick = () => showDetails(nft.contract, nft.identifier);
         gallery.appendChild(card);
     });
@@ -125,17 +105,16 @@ function renderAll() {
 
 async function showDetails(contract, id) {
     modal.classList.remove('hidden');
-    document.getElementById('modalData').innerHTML = `<p style="text-align:center;">LOADING...</p>`;
+    const mData = document.getElementById('modalData'), sBtn = document.getElementById('modalShareBtn');
+    mData.innerHTML = `<p style="text-align:center;">LOADING...</p>`;
     try {
         const res = await fetch(`/api/view?address=${contract}&id=${id}`);
-        const data = await res.json();
-        const nft = data.nft;
-        document.getElementById('modalData').innerHTML = `
-            <h2 style="font-size:24px; font-weight:900;">${nft.name || 'UNTITLED'}</h2>
+        const data = await res.json(), nft = data.nft;
+        sBtn.onclick = () => share(nft.opensea_url);
+        mData.innerHTML = `<h2 style="font-size:24px; font-weight:900;">${nft.name || 'UNTITLED'}</h2>
             <p style="opacity:0.5; font-size:10px; margin-bottom:15px;">${nft.collection.toUpperCase()}</p>
             <p style="font-size:14px; opacity:0.8; line-height:1.5;">${nft.description || 'No description.'}</p>
-            <a href="${nft.opensea_url}" target="_blank" style="display:block; width:100%; padding:18px; background:var(--text); color:var(--bg); text-align:center; border-radius:12px; text-decoration:none; font-weight:900; margin-top:25px;">VIEW ON OPENSEA</a>
-        `;
+            <a href="${nft.opensea_url}" target="_blank" rel="noopener noreferrer" style="display:block; width:100%; padding:18px; background:var(--text); color:var(--bg); text-align:center; border-radius:12px; text-decoration:none; font-weight:900; margin-top:25px;">VIEW ON OPENSEA</a>`;
     } catch (e) { }
 }
 
