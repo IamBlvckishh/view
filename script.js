@@ -92,7 +92,8 @@ function renderAll() {
         } else if (sort === 'artist') {
             list.sort((a,b) => (a.creator||"").localeCompare(b.creator||""));
             let lastA = ""; list.forEach(n => {
-                if (n.creator !== lastA) { appendHeader(n.creator || "UNKNOWN ARTIST"); lastA = n.creator; }
+                const artistName = n.creator || "UNKNOWN ARTIST";
+                if (artistName !== lastA) { appendHeader(artistName); lastA = artistName; }
                 gallery.appendChild(createGridCard(n));
             });
         } else if (sort === 'name') {
