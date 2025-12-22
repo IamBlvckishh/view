@@ -1,16 +1,15 @@
-:root[data-theme="dark"] { --bg: #000; --card: #111; --text: #fff; --border: #222; }
-:root[data-theme="light"] { --bg: #fff; --card: #f0f0f0; --text: #000; --border: #ddd; }
+:root[data-theme="dark"] { --bg: #000; --card: #111; --text: #fff; --border: #222; --glass: rgba(255,255,255,0.1); }
+:root[data-theme="light"] { --bg: #fff; --card: #f0f0f0; --text: #000; --border: #ddd; --glass: rgba(0,0,0,0.05); }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-
 body { background: var(--bg); color: var(--text); overflow: hidden; }
 
 header {
     position: fixed; top: 0; width: 100%; z-index: 100;
-    padding: 20px; background: linear-gradient(to bottom, var(--bg) 50%, transparent);
+    padding: 20px; background: linear-gradient(to bottom, var(--bg) 80%, transparent);
 }
 
-.nav-top { display: flex; justify-content: space-between; align-items: center; max-width: 500px; margin: 0 auto 15px; }
+.nav-top { display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto 15px; }
 h1 { font-size: 10px; letter-spacing: 0.8em; font-weight: 900; opacity: 0.6; }
 
 .search-box { 
@@ -18,60 +17,64 @@ h1 { font-size: 10px; letter-spacing: 0.8em; font-weight: 900; opacity: 0.6; }
     border-radius: 50px; padding: 5px 20px; display: flex; border: 1px solid var(--border);
 }
 input { background: transparent; border: none; color: inherit; flex: 1; padding: 10px; outline: none; font-weight: 700; }
-button { background: transparent; border: none; color: inherit; cursor: pointer; }
 
-/* SNAP SCROLLING */
+/* DOOMSCROLL SNAP ENGINE */
 .snap-container {
-    height: 100vh; width: 100vw;
-    overflow-y: scroll; scroll-snap-type: y mandatory;
-    scroll-behavior: smooth;
+    height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory;
 }
 
 .art-card {
-    height: 100vh; width: 100vw;
-    scroll-snap-align: start; scroll-snap-stop: always;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--bg);
+    height: 100vh; width: 100vw; scroll-snap-align: start; scroll-snap-stop: always;
+    display: flex; align-items: center; justify-content: center; position: relative;
 }
 
+/* Standardization: Same Dimension for All */
 .img-frame {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
 }
-
 .img-frame img {
-    max-width: 100%; max-height: 80vh; /* Keeps it scannable */
-    object-fit: contain; cursor: pointer;
-    box-shadow: 0 0 100px rgba(0,0,0,0.5);
+    width: 100%; height: 100%; object-fit: cover; /* Forces same dimension */
+    cursor: pointer;
 }
 
-/* MODAL BOTTOM SHEET */
-.modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; }
-.modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
-
-.modal-content {
-    background: var(--card); width: 100%; max-height: 70vh;
-    padding: 30px; border-radius: 30px 30px 0 0;
-    position: relative; z-index: 210;
-    overflow-y: auto;
-    transform: translateY(0); animation: slideUp 0.3s ease-out;
+/* Floating Action Bar (TikTok Style) */
+.action-bar {
+    position: absolute; right: 20px; bottom: 100px;
+    display: flex; flex-direction: column; gap: 20px; z-index: 10;
 }
+.action-btn {
+    background: var(--glass); backdrop-filter: blur(10px);
+    border: 1px solid var(--border); color: #fff;
+    width: 50px; height: 50px; border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; transition: transform 0.2s;
+}
+.action-btn:active { transform: scale(0.9); }
+.action-btn span { font-size: 10px; font-weight: 800; margin-top: 2px; }
+.action-btn.liked { color: #ff3b3b; border-color: #ff3b3b; }
 
-@keyframes slideUp { from { transform: translateY(100%); } }
+/* Grid View Adjustments */
+[data-view="grid"] .snap-container {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 2px; padding-top: 140px;
+}
+[data-view="grid"] .art-card { height: 200px; width: 100%; scroll-snap-align: none; }
+[data-view="grid"] .action-bar { display: none; }
 
-.handle { width: 40px; height: 5px; background: var(--border); border-radius: 10px; margin: 0 auto 20px; }
-.close-btn { position: absolute; top: 20px; right: 20px; opacity: 0.5; }
-
-.eth-value { font-size: 32px; font-weight: 900; display: block; }
-.usd-value { font-size: 16px; color: #888; margin-bottom: 20px; display: block; }
-
-.desc-text { line-height: 1.6; color: #aaa; font-size: 14px; }
-.see-more { color: var(--text); font-weight: 700; cursor: pointer; border-bottom: 1px solid var(--text); margin-left: 5px; }
-
-.buy-btn {
-    display: block; width: 100%; padding: 20px; background: var(--text);
-    color: var(--bg); text-align: center; border-radius: 15px;
-    text-decoration: none; font-weight: 900; margin-top: 30px;
+/* Back to Top */
+#backToTop {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg); border: none;
+    padding: 12px 20px; border-radius: 50px; font-weight: 900;
+    z-index: 90; cursor: pointer; display: flex; align-items: center; gap: 8px;
 }
 
 .hidden { display: none !important; }
+
+/* Modal Bottom Sheet */
+.modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; }
+.modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); }
+.modal-content {
+    background: var(--card); width: 100%; max-height: 70vh; padding: 30px;
+    border-radius: 30px 30px 0 0; position: relative; z-index: 210; overflow-y: auto;
+}
