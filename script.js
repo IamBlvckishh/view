@@ -4,7 +4,7 @@ const header = document.getElementById('mainHeader'), bottomNav = document.getEl
 const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect');
 let allNfts = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
 
-// THEME ENGINE
+// THEME & SHUFFLE
 document.getElementById('themeToggle').onclick = () => {
     const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', theme);
@@ -12,7 +12,11 @@ document.getElementById('themeToggle').onclick = () => {
     lucide.createIcons();
 };
 
-// UI AUTO-HIDE
+document.getElementById('shuffleBtn').onclick = () => {
+    if (allNfts.length > 0) renderAll();
+    gallery.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
 gallery.onscroll = () => {
     const cur = gallery.scrollTop;
     if (cur > lastScrollY && cur > 100) { header.classList.add('ui-hidden'); bottomNav.classList.add('ui-hidden'); }
@@ -51,8 +55,11 @@ function renderAll() {
             groups[slug].push(nft);
         });
 
-        Object.keys(groups).sort(() => Math.random() - 0.5).forEach(key => {
-            const items = groups[key];
+        // SHUFFLE COLLECTIONS ORDER
+        const shuffledKeys = Object.keys(groups).sort(() => Math.random() - 0.5);
+        
+        shuffledKeys.forEach(key => {
+            const items = groups[key].sort(() => Math.random() - 0.5); // Randomize items inside the swipe
             const card = document.createElement('div');
             card.className = 'art-card';
             
@@ -97,12 +104,13 @@ async function showDetails(contract, id) {
         const data = await res.json(), nft = data.nft;
         sBtn.onclick = () => share(nft.opensea_url);
         mData.innerHTML = `
-            <h2 style="font-size:24px; font-weight:900;">${nft.name || 'UNTITLED'}</h2>
-            <p style="opacity:0.5; font-size:10px; margin-bottom:15px;">${nft.collection.toUpperCase()}</p>
-            <p style="font-size:14px; opacity:0.8; line-height:1.5;">${nft.description || ''}</p>
-            <a href="${nft.opensea_url}" target="_blank" rel="noopener" style="display:block; width:100%; padding:18px; background:var(--text); color:var(--bg); text-align:center; border-radius:12px; font-weight:900; margin-top:25px; text-decoration:none;">VIEW ON OPENSEA</a>
+            <h2 style="font-size:24px; font-weight:900; margin-bottom:5px;">${nft.name || 'UNTITLED'}</h2>
+            <p style="opacity:0.5; font-size:10px; margin-bottom:15px; letter-spacing:1px;">${nft.collection.toUpperCase()}</p>
+            <p style="font-size:14px; opacity:0.8; line-height:1.6;">${nft.description || ''}</p>
+            <a href="${nft.opensea_url}" target="_blank" rel="noopener" style="display:block; width:100%; padding:20px; background:var(--text); color:var(--bg); text-align:center; border-radius:14px; font-weight:900; margin-top:30px; text-decoration:none;">VIEW ON OPENSEA</a>
         `;
     } catch (e) { mData.innerHTML = "Error loading."; }
+    lucide.createIcons();
 }
 
 window.share = (url) => {
