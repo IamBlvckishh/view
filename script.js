@@ -4,7 +4,7 @@ const header = document.getElementById('mainHeader'), bottomNav = document.getEl
 const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect');
 const dynamicControls = document.getElementById('dynamicControls');
 let allNfts = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
-let tStartX = 0, tStartY = 0;
+let touchStartX = 0, touchStartY = 0;
 
 document.getElementById('themeToggle').onclick = () => {
     const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -18,20 +18,19 @@ document.getElementById('shuffleBtn').onclick = () => {
     gallery.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// IMPROVED SWIPE LOGIC
+// UNIVERSAL SWIPE LOGIC (Grid to Home)
 gallery.addEventListener('touchstart', e => { 
-    tStartX = e.changedTouches[0].screenX; 
-    tStartY = e.changedTouches[0].screenY;
+    touchStartX = e.changedTouches[0].screenX; 
+    touchStartY = e.changedTouches[0].screenY;
 }, {passive: true});
 
 gallery.addEventListener('touchend', e => {
-    const tEndX = e.changedTouches[0].screenX;
-    const tEndY = e.changedTouches[0].screenY;
-    const xDiff = tEndX - tStartX;
-    const yDiff = Math.abs(tEndY - tStartY);
+    const touchEndX = e.changedTouches[0].screenX;
+    const touchEndY = e.changedTouches[0].screenY;
     const mode = document.documentElement.getAttribute('data-view');
+    const xDiff = touchEndX - touchStartX;
+    const yDiff = Math.abs(touchEndY - touchStartY);
 
-    // Universal Grid -> Home (Swipe Right anywhere)
     if (mode === 'grid' && xDiff > 100 && xDiff > yDiff) {
         switchView('snap');
     }
@@ -79,19 +78,9 @@ function renderAll() {
             const items = groups[key].sort(() => Math.random() - 0.5);
             const card = document.createElement('div');
             card.className = 'art-card';
-            
             const slider = document.createElement('div');
             slider.className = 'collection-slider';
-            
-            // Home -> Grid Logic (Only at end of swipe)
-            slider.onscroll = (e) => {
-                const el = e.target;
-                const isAtEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 5;
-                el.ontouchend = (ev) => {
-                    const finalDiff = tStartX - ev.changedTouches[0].screenX;
-                    if (isAtEnd && finalDiff > 80) switchView('grid');
-                };
-            };
+            slider.onscroll = (e) => checkEndSwipe(e.target);
 
             items.forEach((nft, idx) => {
                 const slide = document.createElement('div');
@@ -111,7 +100,6 @@ function renderAll() {
         let list = [...allNfts];
         if (sortSelect.value === 'project') list.sort((a,b) => (a.collection || "").localeCompare(b.collection || ""));
         else if (sortSelect.value === 'name') list.sort((a,b) => (a.name || "").localeCompare(b.name || ""));
-
         list.forEach(nft => {
             const card = document.createElement('div');
             card.className = 'art-card';
@@ -121,6 +109,19 @@ function renderAll() {
         });
     }
     lucide.createIcons();
+}
+
+function checkEndSwipe(el) {
+    const isAtEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 5;
+    if (isAtEnd) {
+        el.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            if (diff > 80 && document.documentElement.getAttribute('data-view') === 'snap') {
+                switchView('grid');
+            }
+        }, { once: true });
+    }
 }
 
 async function showDetails(contract, id) {
@@ -157,15 +158,16 @@ document.querySelector('.close-btn').onclick = () => modal.classList.add('hidden
 document.querySelector('.modal-overlay').onclick = () => modal.classList.add('hidden');
 
 function switchView(mode) {
-    gallery.classList.add('view-transitioning');
-    setTimeout(() => {
-        document.documentElement.setAttribute('data-view', mode);
-        document.getElementById('navHome').classList.toggle('active', mode === 'snap');
-        document.getElementById('navGrid').classList.toggle('active', mode === 'grid');
-        gallery.scrollTo(0,0);
-        renderAll();
-        gallery.classList.remove('view-transitioning');
-    }, 150);
+    // Apply animation class
+    gallery.classList.remove('view-slide-in');
+    void gallery.offsetWidth; // Trigger reflow to restart animation
+    gallery.classList.add('view-slide-in');
+    
+    document.documentElement.setAttribute('data-view', mode);
+    document.getElementById('navHome').classList.toggle('active', mode === 'snap');
+    document.getElementById('navGrid').classList.toggle('active', mode === 'grid');
+    gallery.scrollTo(0,0);
+    renderAll();
 }
 document.getElementById('navHome').onclick = () => switchView('snap');
 document.getElementById('navGrid').onclick = () => switchView('grid');
