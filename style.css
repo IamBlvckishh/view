@@ -1,67 +1,62 @@
-:root[data-theme="dark"] { --bg: #000; --card: #111; --text: #fff; --border: #222; }
-:root[data-theme="light"] { --bg: #fff; --card: #f2f2f2; --text: #000; --border: #ddd; }
+:root[data-theme="dark"] { --bg: #000; --card: #111; --text: #fff; --border: #222; --accent: #fff; }
+:root[data-theme="light"] { --bg: #fff; --card: #f2f2f2; --text: #000; --border: #ddd; --accent: #000; }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-body { background: var(--bg); color: var(--text); overflow: hidden; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); color: var(--text); overflow: hidden; touch-action: pan-y; }
 
 header {
     position: fixed; top: 0; width: 100%; z-index: 100;
-    padding: 15px 20px; background: rgba(var(--bg), 0.8);
-    backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
+    padding: 20px; background: var(--bg); border-bottom: 1px solid var(--border);
 }
 
-.header-content { max-width: 500px; margin: 0 auto; }
-h1 { font-size: 9px; letter-spacing: 0.6em; font-weight: 900; opacity: 0.4; margin-bottom: 10px; text-align: center; }
+/* Bigger Bold Logo */
+h1 { font-size: 22px; letter-spacing: 0.6em; font-weight: 900; text-align: center; margin-bottom: 20px; }
 
 .search-box { 
-    background: var(--card); border-radius: 12px; padding: 0 15px; 
-    display: flex; border: 1px solid var(--border); margin-bottom: 12px;
+    background: var(--card); border-radius: 14px; padding: 0 15px; 
+    display: flex; border: 1px solid var(--border);
 }
-input { background: transparent; border: none; color: inherit; flex: 1; padding: 12px 0; outline: none; font-size: 14px; }
+input { background: transparent; border: none; color: inherit; flex: 1; padding: 14px 0; outline: none; font-size: 15px; font-weight: 500; }
 
-#viewControls { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
-.control-row { display: flex; justify-content: space-between; align-items: center; }
+#viewControls { margin-top: 15px; display: flex; justify-content: center; }
+#sortSelect { background: transparent; color: var(--text); border: none; font-size: 10px; font-weight: 800; opacity: 0.6; }
 
-#sortSelect { 
-    background: transparent; color: var(--text); border: none;
-    font-size: 11px; font-weight: 700; outline: none; cursor: pointer;
+/* BOTTOM NAV BAR */
+#bottomNav {
+    position: fixed; bottom: 0; width: 100%; height: 85px;
+    background: rgba(var(--bg), 0.8); backdrop-filter: blur(20px);
+    display: flex; justify-content: space-around; padding-top: 12px;
+    border-top: 1px solid var(--border); z-index: 100;
 }
-.btn-group { display: flex; gap: 20px; }
-button { background: transparent; border: none; color: inherit; cursor: pointer; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; opacity: 0.4; transition: 0.3s; cursor: pointer; }
+.nav-item.active { opacity: 1; }
+.nav-item span { font-size: 9px; font-weight: 900; letter-spacing: 1px; }
 
-/* TIKTOK / IPHONE SCROLL MODE */
+/* SCROLL UI (TIKTOK STYLE) */
 [data-view="snap"] .snap-container {
-    height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory;
-    background: #000; /* Force black for cinematic feel */
+    height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; background: #000;
 }
-[data-view="snap"] .art-card {
-    height: 100vh; width: 100vw; scroll-snap-align: start;
-    display: flex; align-items: center; justify-content: center;
-}
-[data-view="snap"] .img-frame {
-    width: 100%; height: 80vh; /* iPhone-style centered framing */
-    display: flex; align-items: center; justify-content: center;
-}
-[data-view="snap"] .img-frame img {
-    max-width: 100%; max-height: 100%; object-fit: contain; /* Professional gallery fit */
+[data-view="snap"] .art-card { height: 100vh; width: 100vw; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; position: relative; }
+[data-view="snap"] .img-frame { width: 100%; height: 75vh; display: flex; align-items: center; justify-content: center; }
+[data-view="snap"] .img-frame img { max-width: 90%; max-height: 100%; object-fit: contain; }
+
+.share-action {
+    position: absolute; right: 20px; bottom: 120px;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1);
+    width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff;
 }
 
-/* GRID MODE */
+/* GRID UI */
 [data-view="grid"] .snap-container {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
-    padding: 160px 1px 60px; height: 100vh; overflow-y: auto;
+    padding: 180px 1px 100px; height: 100vh; overflow-y: auto;
 }
-[data-view="grid"] .art-card { height: auto; width: 100%; }
-[data-view="grid"] .img-frame { aspect-ratio: 1/1; border-radius: 0; width: 100%; }
+[data-view="grid"] .img-frame { aspect-ratio: 1/1; width: 100%; }
 [data-view="grid"] .img-frame img { width: 100%; height: 100%; object-fit: cover; }
+[data-view="grid"] .share-action { display: none; }
 
-/* MODAL */
 .modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; }
 .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); }
-.modal-content {
-    background: var(--card); width: 100%; padding: 30px;
-    border-radius: 30px 30px 0 0; position: relative; z-index: 210;
-}
+.modal-content { background: var(--card); width: 100%; padding: 30px; border-radius: 30px 30px 0 0; position: relative; z-index: 210; }
 
 .hidden { display: none !important; }
-footer { display: none; } /* Hidden for better TikTok immersion */
