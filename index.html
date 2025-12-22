@@ -14,7 +14,6 @@
     <header id="mainHeader">
         <div class="header-content">
             <div class="logo-row">
-                <button id="shuffleBtn" class="icon-btn"><i data-lucide="shuffle"></i></button>
                 <h1>VIEW</h1>
                 <button id="themeToggle" class="icon-btn"><i data-lucide="sun"></i></button>
             </div>
@@ -22,12 +21,16 @@
                 <input type="text" id="walletInput" placeholder="ENTER 0x ADDRESS">
                 <button id="goBtn"><i data-lucide="arrow-right"></i></button>
             </div>
-            <div id="viewControls" class="hidden">
-                <select id="sortSelect">
-                    <option value="none">SORT: DEFAULT</option>
-                    <option value="project">BY PROJECT</option>
-                    <option value="name">BY NAME</option>
-                </select>
+            
+            <div id="dynamicControls" class="hidden">
+                <button id="shuffleBtn"><i data-lucide="shuffle"></i> SHUFFLE FEED</button>
+                <div id="viewControls">
+                    <select id="sortSelect">
+                        <option value="none">SORT: DEFAULT</option>
+                        <option value="project">BY PROJECT</option>
+                        <option value="name">BY NAME</option>
+                    </select>
+                </div>
             </div>
         </div>
     </header>
