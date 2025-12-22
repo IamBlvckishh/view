@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" data-view="snap">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -13,16 +13,21 @@
         <div class="header-content">
             <div class="nav-top">
                 <h1>VIEW</h1>
-                <button id="themeToggle"><i data-lucide="sun"></i></button>
+                <div class="controls">
+                    <button id="viewToggle"><i data-lucide="layout-grid"></i></button>
+                    <button id="themeToggle"><i data-lucide="sun"></i></button>
+                </div>
             </div>
             <div class="search-box">
-                <input type="text" id="walletInput" placeholder="PASTE 0x ADDRESS">
+                <input type="text" id="walletInput" placeholder="0x... or .eth name">
                 <button id="goBtn"><i data-lucide="arrow-right"></i></button>
             </div>
         </div>
     </header>
 
     <main id="gallery" class="snap-container"></main>
+
+    <button id="backToTop" class="hidden"><i data-lucide="arrow-up"></i></button>
 
     <div id="detailModal" class="modal hidden">
         <div class="modal-overlay"></div>
@@ -32,6 +37,10 @@
             <div id="modalData"></div>
         </div>
     </div>
+
+    <footer>
+        <p>© 2025 VIEW | Released under <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a></p>
+    </footer>
 
     <script src="script.js"></script>
 </body>
