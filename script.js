@@ -107,11 +107,19 @@ async function showDetails(contract, id) {
         const data = await res.json(), nft = data.nft;
         sBtn.onclick = () => share(nft.opensea_url);
         
-        // Use a real anchor tag with target="_blank" for the OpenSea link
         mData.innerHTML = `<h2 style="font-size:24px; font-weight:900;">${nft.name || 'UNTITLED'}</h2>
             <p style="opacity:0.5; font-size:10px; margin-bottom:15px;">${nft.collection.toUpperCase()}</p>
             <p style="font-size:14px; opacity:0.8; line-height:1.5;">${nft.description || 'No description.'}</p>
-            <a href="${nft.opensea_url}" target="_blank" rel="noopener noreferrer" style="display:block; width:100%; padding:18px; background:var(--text); color:var(--bg); text-align:center; border-radius:12px; text-decoration:none; font-weight:900; margin-top:25px;">VIEW ON OPENSEA</a>`;
+            <button id="bgOpenBtn" style="display:block; width:100%; padding:18px; background:var(--text); color:var(--bg); text-align:center; border-radius:12px; border:none; font-weight:900; margin-top:25px; cursor:pointer;">VIEW ON OPENSEA</button>
+            <p id="tabStatus" style="font-size:10px; text-align:center; margin-top:10px; opacity:0; transition:opacity 0.3s; color:var(--accent); font-weight:700;">OPENED IN TAB</p>`;
+        
+        document.getElementById('bgOpenBtn').onclick = () => {
+            window.open(nft.opensea_url, '_blank');
+            const status = document.getElementById('tabStatus');
+            status.style.opacity = "1";
+            setTimeout(() => { status.style.opacity = "0"; }, 2000);
+            window.focus();
+        };
     } catch (e) { }
     lucide.createIcons();
 }
