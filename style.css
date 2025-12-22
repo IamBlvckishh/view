@@ -20,7 +20,17 @@ h1 { font-size: 24px; letter-spacing: 0.5em; font-weight: 900; margin-left: 30px
 .search-box { background: var(--card); border-radius: 12px; padding: 0 15px; display: flex; border: 1px solid var(--border); }
 input { background: transparent; border: none; color: inherit; flex: 1; padding: 12px 0; outline: none; }
 
-/* Pull to Refresh Styling */
+/* Sort Control Positioning */
+#viewControls { margin-top: 10px; display: flex; justify-content: center; }
+#sortSelect { 
+    background: transparent; color: var(--text); border: none; 
+    font-size: 10px; font-weight: 800; opacity: 0.6; cursor: pointer; outline: none;
+}
+
+/* LOGIC: Hide sort on Snap mode, Show on Grid mode */
+[data-view="snap"] #viewControls { display: none !important; }
+[data-view="grid"] #viewControls { display: flex !important; }
+
 .pull-indicator {
     position: fixed; top: 120px; left: 50%; transform: translateX(-50%) translateY(-50px);
     z-index: 50; opacity: 0; transition: transform 0.2s, opacity 0.2s;
@@ -52,7 +62,7 @@ input { background: transparent; border: none; color: inherit; flex: 1; padding:
     width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff;
 }
 
-[data-view="grid"] .snap-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; padding: 160px 0 80px; overflow-y: auto; }
+[data-view="grid"] .snap-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; padding: 180px 0 80px; overflow-y: auto; }
 [data-view="grid"] .img-frame { aspect-ratio: 1/1; }
 [data-view="grid"] .img-frame img { width: 100%; height: 100%; object-fit: cover; }
 
