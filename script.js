@@ -1,84 +1,88 @@
-lucide.createIcons();
-
-const gallery = document.getElementById('gallery');
-const input = document.getElementById('walletInput');
-const btn = document.getElementById('goBtn');
-const loader = document.getElementById('loader');
-const emptyState = document.getElementById('empty-state');
-
-let continuation = null;
-let currentWallet = "";
-let isFetching = false;
-
-async function fetchNFTs(isNew = false) {
-    if (isFetching || !currentWallet) return;
-    
-    isFetching = true;
-    loader.classList.remove('hidden');
-    if (isNew) {
-        gallery.innerHTML = "";
-        emptyState.style.display = "none";
-    }
-
-    try {
-        // Updated Reservoir endpoint specifically for Shape
-        const baseUrl = `https://api-shape.reservoir.tools/users/${currentWallet}/tokens/v7`;
-        const url = continuation ? `${baseUrl}?continuation=${continuation}&limit=12` : `${baseUrl}?limit=12`;
-
-        const response = await fetch(url);
-        
-        if (!response.ok) throw new Error('API request failed');
-
-        const data = await response.json();
-
-        if (data.tokens && data.tokens.length > 0) {
-            render(data.tokens);
-            continuation = data.continuation;
-        } else if (isNew) {
-            gallery.innerHTML = '<p style="text-align:center;color:#555">No tokens found in this wallet.</p>';
-        }
-    } catch (err) {
-        console.error(err);
-        alert("Failed to load tokens. Check the address or try again.");
-    } finally {
-        isFetching = false;
-        loader.classList.add('hidden');
-    }
+:root {
+    --bg: #050505;
+    --card: #0f0f0f;
+    --border: rgba(255,255,255,0.1);
 }
 
-function render(tokens) {
-    tokens.forEach(item => {
-        const t = item.token;
-        const card = document.createElement('div');
-        card.className = 'nft-card';
-        card.innerHTML = `
-            <div class="img-frame">
-                <img src="${t.image || 'https://via.placeholder.com/600x600?text=Shape+NFT'}" alt="">
-            </div>
-            <div class="meta">
-                <div class="nft-name">${t.name || '#' + t.tokenId.slice(0,5)}</div>
-                <div class="collection">${t.collection.name}</div>
-            </div>
-        `;
-        gallery.appendChild(card);
-    });
+body {
+    background-color: var(--bg);
+    color: white;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-// Doomscroll Logic
-window.onscroll = () => {
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 1000) {
-        if (continuation && !isFetching) fetchNFTs();
-    }
-};
+header {
+    width: 100%;
+    padding: 40px 20px;
+    position: sticky;
+    top: 0;
+    background: rgba(5,5,5,0.8);
+    backdrop-filter: blur(15px);
+    z-index: 10;
+}
 
-btn.onclick = () => {
-    currentWallet = input.value.trim();
-    if (currentWallet) fetchNFTs(true);
-};
+.header-content { max-width: 400px; margin: 0 auto; }
 
-input.onkeydown = (e) => {
-    if (e.key === 'Enter') {
-        currentWallet = input.value.trim();
-        fetchNFTs(true);
-    }
-};
+h1 {
+    font-size: 10px;
+    letter-spacing: 0.8em;
+    text-align: center;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.search-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    padding: 10px 15px;
+}
+
+input {
+    background: transparent;
+    border: none;
+    color: white;
+    flex: 1;
+    outline: none;
+}
+
+.nft-card {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 50px;
+    transition: transform 0.3s ease;
+}
+
+.nft-card:hover {
+    transform: translateY(-5px); /* Adds "Premium" feel */
+}
+
+.img-frame {
+    width: 100%;
+    aspect-ratio: 1/1;
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+img { width: 100%; height: 100%; object-fit: cover; }
+
+.meta { padding: 15px 5px; }
+.name { font-size: 18px; font-weight: bold; }
+.collection { font-size: 11px; opacity: 0.4; text-transform: uppercase; margin-top: 4px; }
+
+#status { font-size: 10px; opacity: 0.3; margin-top: 20px; text-transform: uppercase; }
+
+.hidden { display: none; }
+.spinner {
+    width: 20px; height: 20px;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
