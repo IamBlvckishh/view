@@ -10,13 +10,28 @@ let continuation = null;
 let currentWallet = "";
 let isFetching = false;
 
+// 1. RESOLVE ENS (.eth to 0x)
+async function resolveAddress(inputVal) {
+    if (inputVal.endsWith('.eth')) {
+        try {
+            if (status) status.innerText = "RESOLVING ENS...";
+            const res = await fetch(`https://api.ensoul.xyz/resolve/${inputVal}`);
+            const data = await res.json();
+            if (data.address) return data.address;
+            throw new Error("Could not resolve ENS");
+        } catch (e) {
+            return null;
+        }
+    }
+    return inputVal; // Already a 0x address
+}
+
 async function fetchArt(isNew = false) {
-    // 1. Validation: Don't run if empty or already loading
     if (!currentWallet || isFetching) return;
     
     isFetching = true;
     loader.classList.remove('hidden');
-    if (status) status.innerText = "Connecting to Shape...";
+    if (status) status.innerText = "VIEWING SHAPE...";
 
     if (isNew) {
         gallery.innerHTML = "";
@@ -24,35 +39,34 @@ async function fetchArt(isNew = false) {
     }
 
     try {
-        // 2. The Request: Using the specific Shape L2 Reservoir endpoint
-        const endpoint = `https://api-shape.reservoir.tools/users/${currentWallet}/tokens/v7?limit=12`;
-        const url = continuation ? `${endpoint}&continuation=${continuation}` : endpoint;
+        const baseUrl = `https://api-shape.reservoir.tools/users/${currentWallet}/tokens/v7`;
+        const params = new URLSearchParams({ limit: '12' });
+        if (continuation) params.append('continuation', continuation);
 
-        const response = await fetch(url, {
+        const response = await fetch(`${baseUrl}?${params.toString()}`, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json'
+                'accept': '*/*',
+                // This looks for the API key in your Vercel settings
+                'x-api-key': 'YOUR_RESERVOIR_API_KEY' 
             }
         });
 
-        // 3. Error Check: Did the API actually answer?
-        if (!response.ok) {
-            throw new Error(`Server responded with ${response.status}`);
-        }
+        if (!response.ok) throw new Error("API Blocked");
 
         const data = await response.json();
 
         if (data.tokens && data.tokens.length > 0) {
             render(data.tokens);
             continuation = data.continuation;
-            if (status) status.innerText = continuation ? "Scroll to see more" : "End of collection";
+            if (status) status.innerText = continuation ? "KEEP SCROLLING" : "END OF GALLERY";
         } else if (isNew) {
-            if (status) status.innerText = "This wallet is empty or doesn't exist on Shape.";
+            if (status) status.innerText = "NO ART FOUND";
         }
-        
+
     } catch (e) {
-        console.error("View Error:", e);
-        if (status) status.innerText = "Error: Use a valid 0x address";
+        console.error(e);
+        if (status) status.innerText = "CONNECTION ERROR";
     } finally {
         isFetching = false;
         loader.classList.add('hidden');
@@ -61,38 +75,45 @@ async function fetchArt(isNew = false) {
 
 function render(tokens) {
     tokens.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'nft-card';
-        // We use the 'token' object inside each result
         const t = item.token;
+        if (!t.image) return;
+
+        const card = document.createElement('div');
+        card.className = 'art-card';
         card.innerHTML = `
             <div class="img-frame">
-                <img src="${t.image || 'https://via.placeholder.com/600?text=Shape+Art'}" loading="lazy" onerror="this.src='https://via.placeholder.com/600?text=Image+Load+Failed'">
+                <img src="${t.image}" loading="lazy">
             </div>
             <div class="meta">
-                <div class="name">${t.name || '#' + t.tokenId.slice(0, 5)}</div>
-                <div class="collection">${t.collection.name || 'Unknown Collection'}</div>
+                <div class="name">${t.name || 'UNTITLED'}</div>
+                <div class="collection">${t.collection.name}</div>
             </div>
         `;
         gallery.appendChild(card);
     });
 }
 
-// Infinite Scroll Trigger
-window.onscroll = () => {
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
-        if (continuation && !isFetching) fetchArt();
+// Action Trigger
+async function startSearch() {
+    const rawInput = input.value.trim();
+    if (!rawInput) return;
+    
+    // Resolve ENS if needed
+    currentWallet = await resolveAddress(rawInput);
+    
+    if (!currentWallet) {
+        if (status) status.innerText = "INVALID ENS NAME";
+        return;
     }
-};
-
-btn.onclick = () => {
-    currentWallet = input.value.trim();
+    
     fetchArt(true);
-};
+}
 
-input.onkeydown = (e) => {
-    if (e.key === 'Enter') {
-        currentWallet = input.value.trim();
-        fetchArt(true);
+btn.onclick = startSearch;
+input.onkeydown = (e) => { if (e.key === 'Enter') startSearch(); };
+
+window.onscroll = () => {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 1000) {
+        if (continuation && !isFetching) fetchArt();
     }
 };
