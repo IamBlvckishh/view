@@ -1,20 +1,25 @@
 export default async function handler(req, res) {
-    const { wallet, continuation } = req.query;
-    const apiKey = process.env.RESERVOIR_API_KEY; // Pulled from Vercel Environment Variables
+    const { wallet, next } = req.query;
+    // Get this from your Vercel Environment Variables
+    const apiKey = process.env.OPENSEA_API_KEY; 
 
-    const baseUrl = `https://api-shape.reservoir.tools/users/${wallet}/tokens/v7`;
-    const url = continuation ? `${baseUrl}?continuation=${continuation}&limit=12` : `${baseUrl}?limit=12`;
+    // OpenSea API v2 endpoint for Shape L2
+    const baseUrl = `https://api.opensea.io/api/v2/chain/shape/account/${wallet}/nfts`;
+    const url = next ? `${baseUrl}?next=${next}&limit=12` : `${baseUrl}?limit=12`;
 
     try {
         const response = await fetch(url, {
             headers: {
-                'accept': '*/*',
+                'accept': 'application/json',
                 'x-api-key': apiKey
             }
         });
+        
+        if (!response.ok) throw new Error(`OpenSea error: ${response.status}`);
+        
         const data = await response.json();
         res.status(200).json(data);
     } catch (error) {
-        res.status(500).json({ error: "Failed to fetch from Shape" });
+        res.status(500).json({ error: error.message });
     }
 }
