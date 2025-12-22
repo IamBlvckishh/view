@@ -34,25 +34,24 @@
     <main id="gallery" class="snap-container"></main>
 
     <nav id="bottomNav" class="hidden">
-        <div class="nav-item active" id="navHome">
-            <i data-lucide="home"></i>
-            <span>HOME</span>
-        </div>
-        <div class="nav-item" id="navGrid">
-            <i data-lucide="layout-grid"></i>
-            <span>GRID</span>
-        </div>
+        <div class="nav-item active" id="navHome"><i data-lucide="home"></i><span>HOME</span></div>
+        <div class="nav-item" id="navGrid"><i data-lucide="layout-grid"></i><span>GRID</span></div>
     </nav>
 
     <div id="detailModal" class="modal hidden">
         <div class="modal-overlay"></div>
         <div class="modal-content">
+            <div id="loadBar" class="load-bar"></div>
             <div class="handle"></div>
             <div class="modal-header-actions">
                 <button id="modalShareBtn" class="modal-share-icon"><i data-lucide="share-2"></i></button>
+                <button id="backToDetails" class="back-btn hidden">BACK</button>
                 <button class="close-btn"><i data-lucide="x"></i></button>
             </div>
             <div id="modalData"></div>
+            <div id="iframeContainer" class="hidden">
+                <iframe id="osFrame" src="" frameborder="0"></iframe>
+            </div>
         </div>
     </div>
 
