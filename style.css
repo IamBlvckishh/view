@@ -21,7 +21,6 @@ input { background: transparent; border: none; color: inherit; flex: 1; padding:
 [data-view="snap"] #viewControls { display: none !important; }
 [data-view="grid"] #viewControls { display: flex !important; }
 
-/* Toast Notification */
 .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; padding: 10px 20px; border-radius: 20px; font-size: 12px; font-weight: 900; z-index: 1000; transition: opacity 0.3s; }
 
 .pull-indicator { position: fixed; top: 120px; left: 50%; transform: translateX(-50%) translateY(-50px); z-index: 50; opacity: 0; transition: transform 0.2s, opacity 0.2s; background: var(--card); padding: 10px; border-radius: 50%; border: 1px solid var(--border); }
@@ -52,3 +51,5 @@ input { background: transparent; border: none; color: inherit; flex: 1; padding:
 .modal-header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .modal-share-icon { background: var(--border); color: var(--text); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .hidden { display: none !important; }
+
+#bgOpenBtn:active { transform: scale(0.98); opacity: 0.8; }
