@@ -17,6 +17,15 @@ body { background: var(--bg); color: var(--text); overflow: hidden; height: 100v
 }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+/* NEW ASSET TOAST */
+#assetToast {
+    position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--text); color: var(--bg); padding: 10px 20px; border-radius: 25px;
+    font-size: 10px; font-weight: 900; z-index: 5000; opacity: 0;
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none;
+}
+#assetToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
 header { position: fixed; top: 0; width: 100%; z-index: 1000; padding: 15px 20px; background: var(--bg); border-bottom: 1px solid var(--border); transition: transform 0.3s ease; }
 .ui-hidden { transform: translateY(-100%) !important; }
 #bottomNav.ui-hidden { transform: translateY(100%) !important; }
@@ -55,7 +64,8 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
     background: var(--bg); padding: 15px 20px; font-size: 11px; font-weight: 900; 
     border-bottom: 1px solid var(--border); position: relative; z-index: 50; 
     text-transform: uppercase; display: flex; justify-content: space-between; 
-    align-items: center; cursor: pointer; transition: transform 0.3s ease;
+    align-items: center; cursor: pointer; will-change: transform, opacity;
+    transition: transform 0.3s ease, opacity 0.3s ease;
 }
 .grid-header::after { content: '−'; font-size: 14px; }
 .grid-header.collapsed::after { content: '+'; }
