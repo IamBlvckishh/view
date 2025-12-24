@@ -4,7 +4,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
 body { background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; position: fixed; }
 
-/* REFRESH INDICATOR & SPINNER */
+/* REFRESH INDICATOR */
 #refreshIndicator { 
     width: 100%; display: flex; flex-direction: column; align-items: center; 
     justify-content: center; padding: 20px 0; font-size: 10px; font-weight: 900; 
@@ -21,8 +21,10 @@ header { position: fixed; top: 0; width: 100%; z-index: 1000; padding: 15px 20px
 .ui-hidden { transform: translateY(-100%); }
 
 .snap-container { 
-    height: 100vh; width: 100vw; overflow-y: scroll; overflow-x: hidden; 
-    -webkit-overflow-scrolling: touch; scroll-behavior: smooth;
+    height: 100vh; width: 100vw; 
+    overflow-y: scroll; 
+    overflow-x: hidden; /* STOPS HORIZONTAL WIGGLE */
+    -webkit-overflow-scrolling: touch; 
 }
 
 /* SNAP VIEW */
@@ -33,29 +35,33 @@ header { position: fixed; top: 0; width: 100%; z-index: 1000; padding: 15px 20px
 .collection-slide { flex: 0 0 100vw; width: 100vw; height: 100vh; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
 .collection-slide img { max-width: 100%; max-height: 80vh; object-fit: contain; }
 
-/* GRID VIEW */
+/* GRID VIEW & STICKY HEADERS */
 [data-view="grid"] .snap-container { scroll-snap-type: none !important; display: block !important; padding-top: 230px; padding-bottom: 100px; }
-.grid-group { margin-bottom: 2px; width: 100%; }
+.grid-group { position: relative; width: 100%; margin-bottom: 2px; }
 .grid-header { 
-    position: sticky; top: 210px; z-index: 50; background: var(--bg); 
-    padding: 15px 20px; font-size: 11px; font-weight: 900; 
-    border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; 
+    position: sticky; top: 210px; z-index: 50; 
+    background: var(--bg); padding: 15px 20px; 
+    font-size: 11px; font-weight: 900; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
 }
+.header-hidden { display: none !important; }
 .grid-items { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; width: 100%; }
 
 .collection-counter { 
-    position: absolute; top: 175px; right: 20px; background: rgba(0,0,0,0.6); 
-    color: #fff; padding: 4px 10px; border-radius: 15px; font-size: 10px; 
-    font-weight: 900; z-index: 10; pointer-events: none;
+    position: absolute; top: 175px; right: 20px; 
+    background: rgba(0,0,0,0.6); color: #fff; 
+    padding: 4px 10px; border-radius: 15px; 
+    font-size: 10px; font-weight: 900; z-index: 10; 
+    pointer-events: none;
 }
 
-/* MODAL UI CONTAINER */
+/* MODAL */
 .modal { position: fixed; inset: 0; z-index: 3000; background: #000; display: flex; overflow-y: auto; }
 .modal-content { width: 100%; min-height: 100%; display: flex; flex-direction: column; }
 .modal-header-actions { position: fixed; top: 0; width: 100%; padding: 25px; display: flex; justify-content: space-between; z-index: 3200; pointer-events: none; }
 .modal-icon-btn { pointer-events: auto; background: rgba(255,255,255,0.15); border: none; color: #fff; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
 .modal-body { flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: 100px; padding-bottom: 100px; }
-#modalMainImg { max-width: 95vw; max-height: 70vh; object-fit: contain; }
+#modalMainImg { max-width: 95vw; max-height: 70vh; object-fit: contain; cursor: pointer; }
 
 .modal-text-content { 
     background: var(--card); border: 1px solid var(--border); border-radius: 24px; 
@@ -69,7 +75,7 @@ header { position: fixed; top: 0; width: 100%; z-index: 1000; padding: 15px 20px
 .save-btn { background: var(--border); color: var(--text); border: 1px solid var(--border); cursor: pointer; }
 
 #bottomNav { position: fixed; bottom: 0; width: 100%; height: 65px; background: var(--bg); display: flex; justify-content: center; gap: 60px; padding-top: 10px; border-top: 1px solid var(--border); z-index: 1000; transition: transform 0.3s ease; }
-.nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.4; color: var(--text); }
+.nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.4; color: var(--text); cursor: pointer; }
 .nav-item.active { opacity: 1; }
 .nav-item span { font-size: 8px; font-weight: 900; }
 .hidden { display: none !important; }
