@@ -3,6 +3,13 @@ const gallery = document.getElementById('gallery'), input = document.getElementB
 const header = document.getElementById('mainHeader'), bottomNav = document.getElementById('bottomNav');
 const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect'), backToTop = document.getElementById('backToTop');
 
+// Asset Toast Setup
+let toast = document.getElementById('assetToast');
+if (!toast) {
+    toast = document.createElement('div'); toast.id = 'assetToast';
+    toast.innerText = 'NEW ASSETS LOADED'; document.body.appendChild(toast);
+}
+
 let allNfts = [], displayList = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
 let touchStartX = 0, touchStartY = 0;
 let snapPositions = {}; 
@@ -37,34 +44,24 @@ sortSelect.onchange = () => renderAll();
 const setUIHidden = (hidden) => {
     header.classList.toggle('ui-hidden', hidden);
     bottomNav.classList.toggle('ui-hidden', hidden);
-    // Also hide grid headers if they exist
+    // Snug Header Logic
     document.querySelectorAll('.grid-header').forEach(h => {
-        h.classList.toggle('ui-hidden', hidden);
+        h.style.opacity = hidden ? "0" : "1";
+        h.style.pointerEvents = hidden ? "none" : "auto";
     });
 };
 
 gallery.onscroll = () => {
     const cur = gallery.scrollTop;
     const mode = document.documentElement.getAttribute('data-view');
-    
     if (cur > lastScrollY && cur > 60) setUIHidden(true);
     else if (cur < lastScrollY) setUIHidden(false);
-    
     lastScrollY = cur;
     backToTop.classList.toggle('show', mode === 'grid' && cur > 500);
-    
     if (cur + gallery.clientHeight >= gallery.scrollHeight - 1000 && continuation && !isFetching) fetchArt();
 };
 
 gallery.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }, {passive: true});
-gallery.addEventListener('touchmove', e => {
-    const y = e.touches[0].clientY;
-    if (gallery.scrollTop <= 0 && y > touchStartY + 60) {
-        const ri = document.getElementById('refreshIndicator');
-        if (ri) { ri.style.opacity = "1"; ri.querySelector('span').innerText = y > touchStartY + 130 ? "RELEASE TO REFRESH" : "PULL TO REFRESH"; }
-    }
-}, {passive: true});
-
 gallery.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
     const dy = e.changedTouches[0].clientY - touchStartY;
@@ -74,9 +71,12 @@ gallery.addEventListener('touchend', e => {
         else if (dx < 0 && mode === 'snap') switchView('grid');
     }
     if (gallery.scrollTop <= 0 && dy > 130) fetchArt(true);
-    const ri = document.getElementById('refreshIndicator');
-    if (ri) ri.style.opacity = "0";
 }, {passive: true});
+
+function showToast() {
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
 
 async function fetchArt(isNew = false) {
     currentWallet = input.value.trim();
@@ -94,6 +94,7 @@ async function fetchArt(isNew = false) {
             document.getElementById('dynamicControls').classList.remove('hidden');
             bottomNav.classList.remove('hidden');
             renderAll();
+            if (!isNew) showToast(); 
         }
     } catch (e) {} finally { isFetching = false; }
 }
