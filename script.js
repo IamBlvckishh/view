@@ -7,7 +7,6 @@ let allNfts = [], displayList = [], continuation = null, currentWallet = "", isF
 let touchStartX = 0, touchStartY = 0;
 let snapPositions = {}; 
 
-// Load saved wallet and theme on startup
 window.addEventListener('load', () => {
     const savedWallet = localStorage.getItem('savedWallet');
     const savedTheme = localStorage.getItem('theme');
@@ -15,7 +14,6 @@ window.addEventListener('load', () => {
     if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
 });
 
-// Counter and Scroll Memory
 function updateCounter(slider, collectionKey) {
     const idx = Math.round(slider.scrollLeft / window.innerWidth);
     const total = slider.children.length;
@@ -24,7 +22,6 @@ function updateCounter(slider, collectionKey) {
     snapPositions[collectionKey] = slider.scrollLeft;
 }
 
-// Fixed Theme Toggle
 document.getElementById('themeToggle').onclick = () => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const next = isDark ? 'light' : 'dark';
@@ -35,14 +32,30 @@ document.getElementById('themeToggle').onclick = () => {
     lucide.createIcons();
 };
 
-// Immediate Sort Change
-sortSelect.onchange = () => {
-    const sc = document.getElementById('searchContainer');
-    if (sc) sc.classList.toggle('hidden', sortSelect.value !== 'project');
-    renderAll();
+sortSelect.onchange = () => renderAll();
+
+const setUIHidden = (hidden) => {
+    header.classList.toggle('ui-hidden', hidden);
+    bottomNav.classList.toggle('ui-hidden', hidden);
+    // Also hide grid headers if they exist
+    document.querySelectorAll('.grid-header').forEach(h => {
+        h.classList.toggle('ui-hidden', hidden);
+    });
 };
 
-// Touch Controls
+gallery.onscroll = () => {
+    const cur = gallery.scrollTop;
+    const mode = document.documentElement.getAttribute('data-view');
+    
+    if (cur > lastScrollY && cur > 60) setUIHidden(true);
+    else if (cur < lastScrollY) setUIHidden(false);
+    
+    lastScrollY = cur;
+    backToTop.classList.toggle('show', mode === 'grid' && cur > 500);
+    
+    if (cur + gallery.clientHeight >= gallery.scrollHeight - 1000 && continuation && !isFetching) fetchArt();
+};
+
 gallery.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }, {passive: true});
 gallery.addEventListener('touchmove', e => {
     const y = e.touches[0].clientY;
@@ -51,6 +64,7 @@ gallery.addEventListener('touchmove', e => {
         if (ri) { ri.style.opacity = "1"; ri.querySelector('span').innerText = y > touchStartY + 130 ? "RELEASE TO REFRESH" : "PULL TO REFRESH"; }
     }
 }, {passive: true});
+
 gallery.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
     const dy = e.changedTouches[0].clientY - touchStartY;
@@ -127,15 +141,17 @@ function renderAll(filter = "") {
             container.appendChild(h); container.appendChild(itemsDiv); gallery.appendChild(container);
         });
     }
-    
-    // Fix Search Bar Visibility logic inside render
+
     let sc = document.getElementById('searchContainer');
-    if (!sc && sort === 'project') {
-        sc = document.createElement('div'); sc.id = "searchContainer"; sc.className = "search-container";
-        sc.innerHTML = `<input type="text" id="projectSearch" placeholder="SEARCH PROJECTS...">`;
-        document.getElementById('dynamicControls').appendChild(sc);
-        document.getElementById('projectSearch').oninput = (e) => renderAll(e.target.value);
-    }
+    if (sort === 'project') {
+        if (!sc) {
+            sc = document.createElement('div'); sc.id = "searchContainer"; sc.className = "search-container";
+            sc.innerHTML = `<input type="text" id="projectSearch" placeholder="SEARCH PROJECTS...">`;
+            document.getElementById('dynamicControls').appendChild(sc);
+            document.getElementById('projectSearch').oninput = (e) => renderAll(e.target.value);
+        }
+    } else if (sc) { sc.remove(); }
+    lucide.createIcons();
 }
 
 async function showDetails(c, id, isTwoStep) {
@@ -169,6 +185,7 @@ function switchView(v) {
 
 document.getElementById('goBtn').onclick = () => fetchArt(true);
 document.getElementById('shuffleBtn').onclick = () => { displayList.sort(() => Math.random() - 0.5); renderAll(); gallery.scrollTo(0,0); };
+document.getElementById('backToTop').onclick = () => gallery.scrollTo({top:0, behavior:'smooth'});
 document.querySelector('.close-btn').onclick = () => { modal.classList.add('hidden'); document.querySelector('.modal-content').classList.remove('show-details'); };
 document.getElementById('navHome').onclick = () => switchView('snap');
 document.getElementById('navGrid').onclick = () => switchView('grid');
