@@ -59,7 +59,6 @@ gallery.addEventListener('touchstart', e => {
 gallery.addEventListener('touchmove', e => {
     const dx = Math.abs(e.touches[0].clientX - touchStartX);
     const dy = Math.abs(e.touches[0].clientY - touchStartY);
-    // Hide UI on horizontal swipe move
     if (dx > 10 && dx > dy) setUIHidden(true);
 }, {passive: true});
 
@@ -72,7 +71,6 @@ gallery.addEventListener('touchend', e => {
         else if (dx < 0 && mode === 'snap') switchView('grid');
     }
     if (gallery.scrollTop <= 0 && dy > 130) fetchArt(true);
-    // UI remains hidden until an explicit vertical scroll up is performed
 }, {passive: true});
 
 async function fetchArt(isNew = false) {
