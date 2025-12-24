@@ -51,11 +51,7 @@ gallery.onscroll = () => {
     if (cur + gallery.clientHeight >= gallery.scrollHeight - 1000 && continuation && !isFetching) fetchArt();
 };
 
-gallery.addEventListener('touchstart', e => { 
-    touchStartX = e.touches[0].clientX; 
-    touchStartY = e.touches[0].clientY; 
-}, {passive: true});
-
+gallery.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }, {passive: true});
 gallery.addEventListener('touchmove', e => {
     const dx = Math.abs(e.touches[0].clientX - touchStartX);
     const dy = Math.abs(e.touches[0].clientY - touchStartY);
@@ -158,7 +154,7 @@ async function showDetails(c, id, isTwoStep) {
         const data = await res.json(), n = data.nft, imgUrl = n.image_url || n.display_image_url;
         m.innerHTML = `
             <div class="modal-body">
-                <div id="detailHint">TAP FOR DETAILS</div>
+                <div id="detailHint">TAP IMAGE FOR DETAILS</div>
                 <img src="${imgUrl}" id="modalMainImg">
                 <div class="modal-text-content">
                     <h2 style="font-weight:900;">${n.name || 'UNTITLED'}</h2>
