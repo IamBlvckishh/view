@@ -3,20 +3,15 @@ const gallery = document.getElementById('gallery'), input = document.getElementB
 const header = document.getElementById('mainHeader'), bottomNav = document.getElementById('bottomNav');
 const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect'), backToTop = document.getElementById('backToTop');
 
-// Asset Toast Setup
-let toast = document.getElementById('assetToast');
-if (!toast) {
-    toast = document.createElement('div'); toast.id = 'assetToast';
-    toast.innerText = 'NEW ASSETS LOADED'; document.body.appendChild(toast);
-}
+let toast = document.getElementById('assetToast') || document.createElement('div');
+if (!toast.id) { toast.id = 'assetToast'; toast.innerText = 'NEW ASSETS LOADED'; document.body.appendChild(toast); }
 
 let allNfts = [], displayList = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
 let touchStartX = 0, touchStartY = 0;
 let snapPositions = {}; 
 
 window.addEventListener('load', () => {
-    const savedWallet = localStorage.getItem('savedWallet');
-    const savedTheme = localStorage.getItem('theme');
+    const savedWallet = localStorage.getItem('savedWallet'), savedTheme = localStorage.getItem('theme');
     if (savedWallet) { input.value = savedWallet; fetchArt(true); }
     if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
 });
@@ -28,6 +23,12 @@ function updateCounter(slider, collectionKey) {
     if (counter) counter.innerText = `${idx + 1} / ${total}`;
     snapPositions[collectionKey] = slider.scrollLeft;
 }
+
+const setUIHidden = (hidden) => {
+    header.classList.toggle('ui-hidden', hidden);
+    bottomNav.classList.toggle('ui-hidden', hidden);
+    document.querySelectorAll('.grid-header').forEach(h => h.classList.toggle('ui-hidden', hidden));
+};
 
 document.getElementById('themeToggle').onclick = () => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -41,27 +42,27 @@ document.getElementById('themeToggle').onclick = () => {
 
 sortSelect.onchange = () => renderAll();
 
-const setUIHidden = (hidden) => {
-    header.classList.toggle('ui-hidden', hidden);
-    bottomNav.classList.toggle('ui-hidden', hidden);
-    // Snug Header Logic
-    document.querySelectorAll('.grid-header').forEach(h => {
-        h.style.opacity = hidden ? "0" : "1";
-        h.style.pointerEvents = hidden ? "none" : "auto";
-    });
-};
-
 gallery.onscroll = () => {
     const cur = gallery.scrollTop;
-    const mode = document.documentElement.getAttribute('data-view');
     if (cur > lastScrollY && cur > 60) setUIHidden(true);
     else if (cur < lastScrollY) setUIHidden(false);
     lastScrollY = cur;
-    backToTop.classList.toggle('show', mode === 'grid' && cur > 500);
+    backToTop.classList.toggle('show', document.documentElement.getAttribute('data-view') === 'grid' && cur > 500);
     if (cur + gallery.clientHeight >= gallery.scrollHeight - 1000 && continuation && !isFetching) fetchArt();
 };
 
-gallery.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }, {passive: true});
+gallery.addEventListener('touchstart', e => { 
+    touchStartX = e.touches[0].clientX; 
+    touchStartY = e.touches[0].clientY; 
+}, {passive: true});
+
+gallery.addEventListener('touchmove', e => {
+    const dx = Math.abs(e.touches[0].clientX - touchStartX);
+    const dy = Math.abs(e.touches[0].clientY - touchStartY);
+    // If swiping horizontal in snap mode, hide the headers for a cleaner look
+    if (dx > 10 && dx > dy) setUIHidden(true);
+}, {passive: true});
+
 gallery.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
     const dy = e.changedTouches[0].clientY - touchStartY;
@@ -71,12 +72,9 @@ gallery.addEventListener('touchend', e => {
         else if (dx < 0 && mode === 'snap') switchView('grid');
     }
     if (gallery.scrollTop <= 0 && dy > 130) fetchArt(true);
+    // Show headers back if we stopped swiping horizontally
+    if (Math.abs(dx) > 10) setTimeout(() => setUIHidden(false), 300);
 }, {passive: true});
-
-function showToast() {
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
-}
 
 async function fetchArt(isNew = false) {
     currentWallet = input.value.trim();
@@ -94,7 +92,7 @@ async function fetchArt(isNew = false) {
             document.getElementById('dynamicControls').classList.remove('hidden');
             bottomNav.classList.remove('hidden');
             renderAll();
-            if (!isNew) showToast(); 
+            if (!isNew) { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
         }
     } catch (e) {} finally { isFetching = false; }
 }
@@ -142,7 +140,7 @@ function renderAll(filter = "") {
             container.appendChild(h); container.appendChild(itemsDiv); gallery.appendChild(container);
         });
     }
-
+    // Search Bar injection logic...
     let sc = document.getElementById('searchContainer');
     if (sort === 'project') {
         if (!sc) {
@@ -158,14 +156,31 @@ function renderAll(filter = "") {
 async function showDetails(c, id, isTwoStep) {
     modal.classList.remove('hidden');
     const m = document.getElementById('modalData');
+    m.innerHTML = `<div class="modal-body" style="justify-content:center;"><div class="spinner"></div></div>`;
     try {
         const res = await fetch(`/api/view?address=${c}&id=${id}`);
         const data = await res.json(), n = data.nft, imgUrl = n.image_url || n.display_image_url;
-        m.innerHTML = `<div class="modal-body"><img src="${imgUrl}" id="modalMainImg"><div class="modal-text-content"><h2 style="font-weight:900;">${n.name || 'UNTITLED'}</h2><p style="opacity:0.5; font-size:12px;">${n.collection || ''}</p><p style="margin-top:10px; font-size:14px; opacity:0.8;">${n.description || ''}</p><a href="${n.opensea_url}" target="_blank" class="os-btn">VIEW ON OPENSEA</a><button class="save-btn" id="saveImageBtn">SAVE IMAGE</button></div></div>`;
+        m.innerHTML = `
+            <div class="modal-body">
+                <div id="detailHint">TAP FOR DETAILS</div>
+                <img src="${imgUrl}" id="modalMainImg">
+                <div class="modal-text-content">
+                    <h2 style="font-weight:900;">${n.name || 'UNTITLED'}</h2>
+                    <p style="opacity:0.5; font-size:12px;">${n.collection || ''}</p>
+                    <p style="margin-top:10px; font-size:14px; opacity:0.8;">${n.description || ''}</p>
+                    <a href="${n.opensea_url}" target="_blank" class="os-btn">VIEW ON OPENSEA</a>
+                    <button class="save-btn" id="saveImageBtn">SAVE IMAGE</button>
+                </div>
+            </div>`;
+        const content = document.querySelector('.modal-content');
+        if (isTwoStep) {
+            content.classList.add('show-hint');
+            m.querySelector('img').onclick = () => content.classList.toggle('show-details');
+        } else {
+            content.classList.add('show-details');
+        }
         document.getElementById('saveImageBtn').onclick = () => downloadImage(imgUrl, n.name);
-        m.querySelector('img').onclick = () => { if(isTwoStep) document.querySelector('.modal-content').classList.toggle('show-details'); };
-        if(!isTwoStep) document.querySelector('.modal-content').classList.add('show-details');
-    } catch (e) {}
+    } catch (e) { modal.classList.add('hidden'); }
 }
 
 async function downloadImage(url, name) {
@@ -187,6 +202,9 @@ function switchView(v) {
 document.getElementById('goBtn').onclick = () => fetchArt(true);
 document.getElementById('shuffleBtn').onclick = () => { displayList.sort(() => Math.random() - 0.5); renderAll(); gallery.scrollTo(0,0); };
 document.getElementById('backToTop').onclick = () => gallery.scrollTo({top:0, behavior:'smooth'});
-document.querySelector('.close-btn').onclick = () => { modal.classList.add('hidden'); document.querySelector('.modal-content').classList.remove('show-details'); };
+document.querySelector('.close-btn').onclick = () => { 
+    modal.classList.add('hidden'); 
+    document.querySelector('.modal-content').classList.remove('show-details', 'show-hint'); 
+};
 document.getElementById('navHome').onclick = () => switchView('snap');
 document.getElementById('navGrid').onclick = () => switchView('grid');
