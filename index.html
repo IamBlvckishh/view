@@ -1,52 +1,46 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark" data-view="snap">
+<html lang="en" data-view="snap" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VIEW</title>
+    <title>ART VAULT</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
-
     <header id="mainHeader">
-        <div class="header-content">
-            <div class="logo-row">
-                <h1>VIEW</h1>
-                <button id="themeToggle" class="icon-btn">
-                    <i data-lucide="sun"></i>
-                </button>
-            </div>
-
-            <div class="search-box">
-                <input type="text" id="walletInput" placeholder="ENTER 0x ADDRESS">
-                <button id="goBtn"><i data-lucide="arrow-right"></i></button>
-            </div>
-
-            <div id="dynamicControls" class="hidden">
-                <div class="controls-row">
-                    <button id="shuffleBtn">SHUFFLE</button>
-                    <div id="viewControls">
-                        <select id="sortSelect">
-                            <option value="none">SORT: DEFAULT</option>
-                            <option value="project">BY PROJECT</option>
-                            <option value="name">BY NAME</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+        <div class="logo-row">
+            <h1>VAULT</h1>
+            <button class="icon-btn" id="themeToggle"><i data-lucide="sun"></i></button>
         </div>
+
+        <div class="search-box">
+            <input type="text" id="walletInput" placeholder="ENTER WALLET ADDRESS...">
+            <button id="goBtn"><i data-lucide="arrow-right"></i></button>
+        </div>
+
+        <div id="dynamicControls" class="hidden">
+            <div class="controls-row">
+                <button id="shuffleBtn">SHUFFLE ART</button>
+                <select id="sortSelect">
+                    <option value="none">SORT: NONE</option>
+                    <option value="project">SORT: PROJECT</option>
+                    <option value="name">SORT: NAME</option>
+                </select>
+            </div>
+            </div>
     </header>
 
-    <main id="gallery" class="snap-container"></main>
+    <main id="gallery" class="snap-container">
+        </main>
 
     <button id="backToTop"><i data-lucide="arrow-up"></i></button>
 
     <nav id="bottomNav" class="hidden">
         <div class="nav-item active" id="navHome">
-            <i data-lucide="home"></i>
-            <span>HOME</span>
+            <i data-lucide="layers"></i>
+            <span>SCROLL</span>
         </div>
         <div class="nav-item" id="navGrid">
             <i data-lucide="layout-grid"></i>
@@ -57,16 +51,16 @@
     <div id="detailModal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header-actions">
-                <button id="modalShareBtn" class="modal-icon-btn">
-                    <i data-lucide="share-2"></i>
-                </button>
-                <button class="close-btn modal-icon-btn">
-                    <i data-lucide="x"></i>
-                </button>
+                <button class="modal-icon-btn close-btn"><i data-lucide="x"></i></button>
+                <button class="modal-icon-btn share-btn" onclick="window.print()"><i data-lucide="share-2"></i></button>
             </div>
-            <div id="modalData"></div>
+            
+            <div id="modalData">
+                </div>
         </div>
     </div>
+
+    <div id="assetToast">NEW ASSETS LOADED</div>
 
     <script src="script.js"></script>
 </body>
