@@ -85,37 +85,49 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
 #backToTop { position: fixed; bottom: 85px; right: 20px; width: 45px; height: 45px; background: var(--text); color: var(--bg); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transform: translateY(10px); transition: 0.3s; }
 #backToTop.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
 
-/* MODAL & NAV LOCKING */
+/* MODAL UI */
 .modal { position: fixed; inset: 0; z-index: 3000; background: #000; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; }
 .modal-content { width: 100%; min-height: 100%; display: flex; flex-direction: column; position: relative; }
 
-.modal-header-actions { position: fixed; top: 0; left: 0; width: 100%; padding: 25px; display: flex; justify-content: space-between; align-items: center; z-index: 3200; pointer-events: none; }
-.modal-icon-btn { pointer-events: auto; background: rgba(0,0,0,0.5); border: none; color: #fff; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+/* MODAL HEADER ACTIONS: FIXED & LOCKED TO SIDES */
+.modal-header-actions { 
+    position: fixed; top: 0; left: 0; width: 100%; 
+    padding: 25px; display: flex; justify-content: space-between; 
+    align-items: center; z-index: 3200; pointer-events: none; 
+}
+.modal-icon-btn { 
+    pointer-events: auto; background: rgba(0,0,0,0.5); border: none; 
+    color: #fff; width: 48px; height: 48px; border-radius: 50%; 
+    display: flex; align-items: center; justify-content: center; 
+    backdrop-filter: blur(10px); 
+}
 
+/* TAP FOR DETAILS: CENTERED BETWEEN ICONS */
 #detailHint {
-    position: absolute; 
-    top: 75%; /* Positions it directly on the lower part of the image */
+    position: fixed; 
+    top: 35px; /* Aligned with X and Share buttons */
     left: 50%; 
-    transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.7); /* Slightly darker for better contrast over art */
+    transform: translateX(-50%);
+    background: rgba(128, 128, 128, 0.2); 
     color: #fff; 
-    padding: 10px 20px;
-    border-radius: 30px; 
-    font-size: 11px; 
+    padding: 6px 14px;
+    border-radius: 20px; 
+    font-size: 9px; 
     font-weight: 900;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     pointer-events: none; 
     opacity: 0; 
     transition: 0.3s; 
-    z-index: 3100;
-    border: 1px solid rgba(255,255,255,0.2);
-    backdrop-filter: blur(4px);
+    z-index: 3300; 
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
 }
 .show-hint #detailHint { opacity: 1; }
 .show-details #detailHint { opacity: 0 !important; }
 
 .modal-body { flex: 1; display: flex; flex-direction: column; align-items: center; width: 100%; padding-top: 100px; padding-bottom: 100px; }
 #modalMainImg { max-width: 95vw; max-height: 70vh; object-fit: contain; }
+
 .modal-text-content { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 25px !important; margin: 20px; width: calc(100% - 40px) !important; max-width: 450px; opacity: 0; transform: translateY(20px); transition: 0.4s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 .show-details .modal-text-content { opacity: 1; height: auto; transform: translateY(0); }
 
@@ -128,4 +140,5 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
 .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.4; color: var(--text); cursor: pointer; }
 .nav-item.active { opacity: 1; }
 .nav-item span { font-size: 8px; font-weight: 900; }
+
 .hidden { display: none !important; }
