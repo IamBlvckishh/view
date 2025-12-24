@@ -1,16 +1,14 @@
 lucide.createIcons();
 const gallery = document.getElementById('gallery'), input = document.getElementById('walletInput');
 const header = document.getElementById('mainHeader'), bottomNav = document.getElementById('bottomNav');
-const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect');
+const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect'), backToTop = document.getElementById('backToTop');
 
-let allNfts = [], displayList = [], continuation = null, currentWallet = "", isFetching = false;
+let allNfts = [], displayList = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
 let touchStartX = 0, touchStartY = 0;
 
-// COUNTER LOGIC: Calculation based on Scroll Position
+// COUNTER FIX: Updates based on scroll position
 function updateCounter(slider) {
-    const scrollLeft = slider.scrollLeft;
-    const width = slider.clientWidth;
-    const idx = Math.round(scrollLeft / width);
+    const idx = Math.round(slider.scrollLeft / window.innerWidth);
     const total = slider.children.length;
     const counter = slider.parentElement.querySelector('.collection-counter');
     if (counter) counter.innerText = `${idx + 1} / ${total}`;
@@ -24,11 +22,12 @@ gallery.addEventListener('touchstart', e => {
 
 gallery.addEventListener('touchmove', e => {
     const y = e.touches[0].clientY;
-    // Pull to Refresh UI
-    if (gallery.scrollTop <= 0 && y > touchStartY + 50) {
+    if (gallery.scrollTop <= 0 && y > touchStartY + 60) {
         const ri = document.getElementById('refreshIndicator');
-        ri.style.opacity = "1";
-        ri.querySelector('span').innerText = y > touchStartY + 120 ? "RELEASE TO REFRESH" : "PULL TO REFRESH";
+        if (ri) {
+            ri.style.opacity = "1";
+            ri.querySelector('span').innerText = y > touchStartY + 130 ? "RELEASE TO REFRESH" : "PULL TO REFRESH";
+        }
     }
 }, {passive: true});
 
@@ -36,18 +35,33 @@ gallery.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
     const dy = e.changedTouches[0].clientY - touchStartY;
 
-    // View Switching Swipe
+    // View Swiping
     if (Math.abs(dx) > 100 && Math.abs(dy) < 80) {
         const mode = document.documentElement.getAttribute('data-view');
         if (dx > 0 && mode === 'grid') switchView('snap');
         else if (dx < 0 && mode === 'snap') switchView('grid');
     }
-    // Refresh Trigger
-    if (gallery.scrollTop <= 0 && dy > 120) fetchArt(true);
+    // Pull to Refresh Trigger
+    if (gallery.scrollTop <= 0 && dy > 130) fetchArt(true);
     
     const ri = document.getElementById('refreshIndicator');
     if (ri) ri.style.opacity = "0";
 }, {passive: true});
+
+const setUIHidden = (hidden) => {
+    header.classList.toggle('ui-hidden', hidden);
+    bottomNav.classList.toggle('ui-hidden', hidden);
+};
+
+gallery.onscroll = () => {
+    const cur = gallery.scrollTop;
+    const mode = document.documentElement.getAttribute('data-view');
+    if (cur > lastScrollY && cur > 100) setUIHidden(true);
+    else if (cur < lastScrollY) setUIHidden(false);
+    lastScrollY = cur;
+    backToTop.classList.toggle('show', mode === 'grid' && cur > 500);
+    if (cur + gallery.clientHeight >= gallery.scrollHeight - 1000 && continuation && !isFetching) fetchArt();
+};
 
 async function fetchArt(isNew = false) {
     currentWallet = input.value.trim();
@@ -103,12 +117,12 @@ function renderAll(filter = "") {
             });
         }
         Object.keys(groups).forEach(k => {
-            const groupDiv = document.createElement('div'); groupDiv.className = 'grid-group';
+            const container = document.createElement('div'); container.className = 'grid-group-container';
             const h = document.createElement('div');
             h.className = `grid-header ${sort === 'none' ? 'header-hidden' : ''}`;
-            h.innerHTML = `<span>${k}</span><span>—</span>`;
+            h.innerText = k || "UNKNOWN";
             
-            const itemsDiv = document.createElement('div'); itemsDiv.className = 'grid-items';
+            const itemsDiv = document.createElement('div'); itemsDiv.className = 'grid-items-wrapper';
             groups[k].forEach(n => {
                 const c = document.createElement('div'); c.className = 'art-card';
                 c.innerHTML = `<img src="${n.image_url || n.display_image_url}">`;
@@ -117,12 +131,11 @@ function renderAll(filter = "") {
             });
 
             h.onclick = () => {
-                const isHid = itemsDiv.style.display === 'none';
-                itemsDiv.style.display = isHid ? 'grid' : 'none';
-                h.querySelector('span:last-child').innerText = isHid ? '—' : '+';
+                h.classList.toggle('collapsed');
+                itemsDiv.classList.toggle('collapsed-group');
             };
 
-            groupDiv.appendChild(h); groupDiv.appendChild(itemsDiv); gallery.appendChild(groupDiv);
+            container.appendChild(h); container.appendChild(itemsDiv); gallery.appendChild(container);
         });
     }
     lucide.createIcons();
@@ -167,5 +180,8 @@ function switchView(v) {
 }
 
 document.getElementById('goBtn').onclick = () => fetchArt(true);
+document.getElementById('shuffleBtn').onclick = () => { displayList.sort(() => Math.random() - 0.5); renderAll(); gallery.scrollTo(0,0); };
+document.getElementById('backToTop').onclick = () => gallery.scrollTo({top:0, behavior:'smooth'});
+document.querySelector('.close-btn').onclick = () => { modal.classList.add('hidden'); document.querySelector('.modal-content').classList.remove('show-details'); };
 document.getElementById('navHome').onclick = () => switchView('snap');
 document.getElementById('navGrid').onclick = () => switchView('grid');
