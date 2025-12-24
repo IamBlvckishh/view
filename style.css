@@ -1,5 +1,5 @@
 :root[data-theme="dark"] { --bg: #000; --card: #111; --text: #fff; --border: #222; }
-:root[data-theme="light"] { --bg: #fff; --card: #f2f2f2; --text: #000; --border: #ddd; }
+:root[data-theme="light"] { --bg: #fff; --card: #f7f7f7; --text: #000; --border: #eee; }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
 body { background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; position: fixed; }
@@ -11,21 +11,23 @@ header { position: fixed; top: 0; width: 100%; z-index: 1000; padding: 15px 20px
 
 .logo-row { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; position: relative; }
 h1 { font-size: 22px; letter-spacing: 0.5em; font-weight: 900; }
+.icon-btn { background: none; border: none; color: var(--text); cursor: pointer; position: absolute; right: 0; }
+
 .search-box { background: var(--card); border-radius: 12px; padding: 0 15px; display: flex; border: 1px solid var(--border); margin-bottom: 10px; align-items: center; }
 input { background: transparent; border: none; color: var(--text); flex: 1; padding: 12px 0; outline: none; font-size: 14px; }
+#goBtn { background: none; border: none; color: var(--text); }
 
 .controls-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; }
 #shuffleBtn { background: var(--border); border: none; color: var(--text); padding: 8px 14px; border-radius: 20px; font-size: 10px; font-weight: 900; cursor: pointer; }
 #sortSelect { background: transparent; color: var(--text); border: none; font-size: 10px; font-weight: 800; outline: none; }
 
-/* PROJECT SEARCH BAR */
 .search-container { width: 100%; margin-top: 5px; }
 #projectSearch { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 8px; font-size: 12px; outline: none; }
 
 /* CONTAINERS */
 .snap-container { height: 100vh; width: 100vw; overflow-y: scroll; -webkit-overflow-scrolling: touch; }
 
-/* VIEW STATES */
+/* SNAP VIEW */
 [data-view="snap"] .snap-container { scroll-snap-type: y mandatory; }
 [data-view="snap"] .art-card { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; }
 
@@ -34,32 +36,33 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
 .collection-slide { flex: 0 0 100vw; width: 100vw; height: 100vh; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; background: var(--bg); }
 .collection-slide img { max-width: 100%; max-height: 80vh; object-fit: contain; }
 
+/* GRID VIEW */
 [data-view="grid"] .snap-container { scroll-snap-type: none !important; display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 1px !important; padding-top: 175px; padding-bottom: 100px; }
 [data-view="grid"] .art-card { width: 100% !important; height: auto !important; aspect-ratio: 1/1 !important; display: block !important; }
 [data-view="grid"] .art-card img { width: 100%; height: 100%; object-fit: cover; }
 
-/* HEADERS & TOAST */
+/* HEADERS & ELEMENTS */
 .grid-header { grid-column: 1 / -1; background: var(--bg); padding: 15px 20px; font-size: 11px; font-weight: 900; border-bottom: 1px solid var(--border); position: sticky; top: 165px; z-index: 50; transition: top 0.3s ease; text-transform: uppercase; }
 .ui-hidden ~ .snap-container .grid-header { top: 0; }
 .collection-counter { position: absolute; top: 175px; right: 20px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 10px; border-radius: 15px; font-size: 10px; font-weight: 900; z-index: 10; }
 
 .loading-popup { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 8px 16px; border-radius: 20px; font-size: 10px; font-weight: 900; z-index: 5000; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
 
-/* MODAL FIX: PERFECT CENTERING */
+/* MODAL FIX: LOWERED POSITION */
 .modal { position: fixed; inset: 0; z-index: 3000; background: #000; display: flex; align-items: center; justify-content: center; }
 .modal-content { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; }
 .modal-header-actions { position: absolute; top: 0; left: 0; width: 100%; padding: 25px; display: flex; justify-content: space-between; z-index: 3200; pointer-events: none; }
 .modal-icon-btn { pointer-events: auto; background: rgba(255,255,255,0.15); border: none; color: #fff; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
 
-.modal-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; }
-.modal-img-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-#modalMainImg { max-width: 95vw; max-height: 80vh; object-fit: contain; display: block; transition: 0.4s ease; }
+.modal-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding-top: 100px; overflow-y: auto; }
+.modal-img-container { width: 100%; display: flex; align-items: center; justify-content: center; min-height: 50vh; }
+#modalMainImg { max-width: 95vw; max-height: 70vh; object-fit: contain; display: block; transition: 0.4s ease; }
 
 .modal-text-content { opacity: 0; height: 0; overflow: hidden; transform: translateY(20px); transition: 0.4s ease; width: 100%; max-width: 450px; padding: 20px; }
 .show-details #modalMainImg { opacity: 0.2; transform: scale(0.9); }
-.show-details .modal-text-content { opacity: 1; height: auto; transform: translateY(0); }
+.show-details .modal-text-content { opacity: 1; height: auto; transform: translateY(0); margin-top: 20px; padding-bottom: 50px; }
 
-/* BOTTOM NAV */
+/* NAV */
 #bottomNav { position: fixed; bottom: 0; width: 100%; height: 65px; background: var(--bg); display: flex; justify-content: center; gap: 60px; padding-top: 10px; border-top: 1px solid var(--border); z-index: 1000; transition: transform 0.3s ease; }
 .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.4; color: var(--text); cursor: pointer; }
 .nav-item.active { opacity: 1; }
