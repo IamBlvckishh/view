@@ -44,12 +44,24 @@ gallery.onscroll = () => {
     if (gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight - 1000 && continuation && !isFetching) fetchArt();
 };
 
-// SLIDER COUNTER LOGIC
 function updateSliderCounter(slider) {
     const index = Math.round(slider.scrollLeft / window.innerWidth);
     const counter = slider.parentElement.querySelector('.collection-counter');
     const total = slider.children.length;
     if (counter) counter.innerText = `${index + 1} / ${total}`;
+}
+
+// ASSET PRE-LOADER (Ensures all visual assets load)
+async function preloadAssets(nfts) {
+    const promises = nfts.map(n => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = n.image_url || n.display_image_url;
+            img.onload = resolve;
+            img.onerror = resolve; // Continue even if one fails
+        });
+    });
+    await Promise.all(promises);
 }
 
 async function fetchArt(isNew = false) {
@@ -61,12 +73,13 @@ async function fetchArt(isNew = false) {
         const res = await fetch(`/api/view?wallet=${currentWallet}${continuation ? `&next=${continuation}` : ''}`);
         const data = await res.json();
         if (data.nfts) { 
+            await preloadAssets(data.nfts); // WAIT FOR ASSETS
             allNfts = [...allNfts, ...data.nfts]; 
             continuation = data.next; 
             document.getElementById('dynamicControls').classList.remove('hidden');
             bottomNav.classList.remove('hidden');
             renderAll(); 
-            showToast("ALL ART LOADED");
+            showToast("ALL ASSETS LOADED");
         }
     } catch (e) {} finally { isFetching = false; }
 }
@@ -131,7 +144,18 @@ async function showDetails(c, id, isTwoStep) {
     try {
         const res = await fetch(`/api/view?address=${c}&id=${id}`);
         const data = await res.json(), n = data.nft;
-        m.innerHTML = `<div class="modal-body"><div class="modal-img-container"><img src="${n.image_url || n.display_image_url}" id="modalMainImg"></div><div class="modal-text-content"><h2 style="font-weight:900;">${n.name || 'UNTITLED'}</h2><p style="opacity:0.5; font-size:12px;">${n.collection || ''}</p><p style="margin-top:15px; font-size:14px; opacity:0.8;">${n.description || ''}</p></div></div>`;
+        m.innerHTML = `
+            <div class="modal-body">
+                <div class="modal-img-container">
+                    <img src="${n.image_url || n.display_image_url}" id="modalMainImg">
+                </div>
+                <div class="modal-text-content">
+                    <h2 style="font-weight:900; margin-bottom:5px;">${n.name || 'UNTITLED'}</h2>
+                    <p style="opacity:0.5; font-size:12px; margin-bottom:15px;">${n.collection || ''}</p>
+                    <p style="font-size:14px; opacity:0.8; line-height:1.5;">${n.description || ''}</p>
+                    <a href="${n.opensea_url}" target="_blank" class="os-btn">VIEW ON OPENSEA</a>
+                </div>
+            </div>`;
         m.querySelector('.modal-img-container').onclick = () => { if(isTwoStep) modalContent.classList.toggle('show-details'); };
         if(!isTwoStep) modalContent.classList.add('show-details');
     } catch (e) {}
