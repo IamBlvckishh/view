@@ -13,6 +13,17 @@ const showToast = (msg) => {
     setTimeout(() => { t.style.opacity = '0'; }, 2000);
 };
 
+// THEME TOGGLE
+document.getElementById('themeToggle').onclick = () => {
+    const doc = document.documentElement;
+    const isDark = doc.getAttribute('data-theme') === 'dark';
+    const newTheme = isDark ? 'light' : 'dark';
+    doc.setAttribute('data-theme', newTheme);
+    const icon = document.querySelector('#themeToggle i');
+    icon.setAttribute('data-lucide', newTheme === 'light' ? 'moon' : 'sun');
+    lucide.createIcons();
+};
+
 // UNIVERSAL SWIPE
 document.addEventListener('touchstart', e => { touchX = e.changedTouches[0].screenX; touchY = e.changedTouches[0].screenY; }, {passive: true});
 document.addEventListener('touchend', e => {
@@ -32,6 +43,14 @@ gallery.onscroll = () => {
     lastScrollY = cur;
     if (gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight - 1000 && continuation && !isFetching) fetchArt();
 };
+
+// SLIDER COUNTER LOGIC
+function updateSliderCounter(slider) {
+    const index = Math.round(slider.scrollLeft / window.innerWidth);
+    const counter = slider.parentElement.querySelector('.collection-counter');
+    const total = slider.children.length;
+    if (counter) counter.innerText = `${index + 1} / ${total}`;
+}
 
 async function fetchArt(isNew = false) {
     currentWallet = input.value.trim();
@@ -56,7 +75,6 @@ function renderAll(filter = "") {
     gallery.innerHTML = "";
     const mode = document.documentElement.getAttribute('data-view');
     const sort = sortSelect.value;
-    
     let list = allNfts.filter(n => (n.collection || "").toLowerCase().includes(filter.toLowerCase()));
 
     if (mode === 'snap') {
@@ -65,6 +83,7 @@ function renderAll(filter = "") {
         Object.keys(groups).sort(() => Math.random() - 0.5).forEach(k => {
             const items = groups[k], card = document.createElement('div'), slider = document.createElement('div');
             card.className = 'art-card'; slider.className = 'collection-slider';
+            slider.onscroll = () => updateSliderCounter(slider);
             items.forEach((n, idx) => {
                 const s = document.createElement('div'); s.className = 'collection-slide';
                 s.innerHTML = `<div class="collection-counter">${idx + 1} / ${items.length}</div><img src="${n.image_url || n.display_image_url}">`;
@@ -76,7 +95,6 @@ function renderAll(filter = "") {
     } else {
         if (sort === 'project') list.sort((a,b) => (a.collection||"").localeCompare(b.collection||""));
         else if (sort === 'name') list.sort((a,b) => (a.name||"").localeCompare(b.name||""));
-
         let lastG = "";
         list.forEach(n => {
             const curG = sort === 'project' ? n.collection : sort === 'name' ? (n.name||"#")[0].toUpperCase() : "";
@@ -93,7 +111,6 @@ function renderAll(filter = "") {
     lucide.createIcons();
 }
 
-// SEARCH UI LOGIC
 sortSelect.onchange = () => {
     let sc = document.getElementById('searchContainer');
     if (!sc) {
