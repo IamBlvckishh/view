@@ -93,9 +93,23 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
 .modal-icon-btn { pointer-events: auto; background: rgba(0,0,0,0.5); border: none; color: #fff; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
 
 #detailHint {
-    position: absolute; bottom: 35%; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.6); color: #fff; padding: 8px 16px; border-radius: 20px;
-    font-size: 10px; font-weight: 900; pointer-events: none; opacity: 0; transition: 0.3s; z-index: 3100;
+    position: absolute; 
+    top: 75%; /* Positions it directly on the lower part of the image */
+    left: 50%; 
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.7); /* Slightly darker for better contrast over art */
+    color: #fff; 
+    padding: 10px 20px;
+    border-radius: 30px; 
+    font-size: 11px; 
+    font-weight: 900;
+    letter-spacing: 1px;
+    pointer-events: none; 
+    opacity: 0; 
+    transition: 0.3s; 
+    z-index: 3100;
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(4px);
 }
 .show-hint #detailHint { opacity: 1; }
 .show-details #detailHint { opacity: 0 !important; }
