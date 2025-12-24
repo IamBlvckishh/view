@@ -4,38 +4,33 @@ const header = document.getElementById('mainHeader'), bottomNav = document.getEl
 const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect'), backToTop = document.getElementById('backToTop');
 
 let allNfts = [], displayList = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
-let touchX = 0, touchY = 0;
+let touchStartX = 0, touchStartY = 0;
 
-// COUNTER OBSERVER
-const counterObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const slide = entry.target;
-            const index = slide.getAttribute('data-index');
-            const total = slide.getAttribute('data-total');
-            const counter = slide.parentElement.parentElement.querySelector('.collection-counter');
-            if (counter) counter.innerText = `${parseInt(index) + 1} / ${total}`;
-        }
-    });
-}, { threshold: 0.6 });
-
-function setupCounterObserver() {
-    document.querySelectorAll('.collection-slide').forEach(slide => counterObserver.observe(slide));
+// REBUILT COUNTER: Accurate Scroll-Math
+function updateActiveCounter(slider) {
+    const width = slider.offsetWidth;
+    const index = Math.round(slider.scrollLeft / width);
+    const total = slider.children.length;
+    const counter = slider.parentElement.querySelector('.collection-counter');
+    if (counter) counter.innerText = `${index + 1} / ${total}`;
 }
 
-window.onload = () => {
-    const saved = sessionStorage.getItem('tempWallet');
-    if (saved) { input.value = saved; fetchArt(true); sessionStorage.removeItem('tempWallet'); }
-};
+// SMOOTH UNIVERSAL SWIPE: Client Coordinate Detection
+document.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+}, {passive: true});
 
-// UNIVERSAL SWIPE
-document.addEventListener('touchstart', e => { touchX = e.changedTouches[0].screenX; touchY = e.changedTouches[0].screenY; }, {passive: true});
 document.addEventListener('touchend', e => {
-    const xDiff = e.changedTouches[0].screenX - touchX, yDiff = Math.abs(e.changedTouches[0].screenY - touchY);
-    if (Math.abs(xDiff) > 100 && yDiff < 60) {
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const dx = touchEndX - touchStartX;
+    const dy = Math.abs(touchEndY - touchStartY);
+
+    if (Math.abs(dx) > 100 && dy < 80) {
         const mode = document.documentElement.getAttribute('data-view');
-        if (xDiff > 0 && mode === 'grid') switchView('snap');
-        if (xDiff < 0 && mode === 'snap') switchView('grid');
+        if (dx > 0 && mode === 'grid') switchView('snap');
+        else if (dx < 0 && mode === 'snap') switchView('grid');
     }
 }, {passive: true});
 
@@ -99,31 +94,31 @@ function renderAll(filter = "") {
         Object.keys(groups).forEach(k => {
             const items = groups[k], card = document.createElement('div'), slider = document.createElement('div');
             card.className = 'art-card'; slider.className = 'collection-slider';
-            slider.addEventListener('scroll', () => setUIHidden(true), {passive: true});
+            slider.addEventListener('scroll', () => { setUIHidden(true); updateActiveCounter(slider); }, {passive: true});
             items.forEach((n, idx) => {
-                const s = document.createElement('div'); 
-                s.className = 'collection-slide'; s.setAttribute('data-index', idx); s.setAttribute('data-total', items.length);
+                const s = document.createElement('div'); s.className = 'collection-slide';
                 s.innerHTML = `<div class="collection-counter">1 / ${items.length}</div><img src="${n.image_url || n.display_image_url}">`;
                 s.onclick = () => showDetails(n.contract, n.identifier, false);
                 slider.appendChild(s);
             });
             card.appendChild(slider); gallery.appendChild(card);
         });
-        setupCounterObserver();
     } else {
         if (sort === 'project') list.sort((a,b) => (a.collection||"").localeCompare(b.collection||""));
         else if (sort === 'name') list.sort((a,b) => (a.name||"").localeCompare(b.name||""));
         
         let groups = {};
         list.forEach(n => {
-            const k = sort === 'project' ? n.collection : sort === 'name' ? (n.name||"#")[0].toUpperCase() : "ALL";
+            const k = (sort === 'project') ? n.collection : (sort === 'name') ? (n.name||"#")[0].toUpperCase() : "DEFAULT";
             if (!groups[k]) groups[k] = [];
             groups[k].push(n);
         });
 
         Object.keys(groups).forEach(k => {
             const container = document.createElement('div'); container.className = 'grid-group-container';
-            const h = document.createElement('div'); h.className = 'grid-header'; h.innerText = k || "UNKNOWN";
+            const h = document.createElement('div');
+            h.className = `grid-header ${sort === 'none' ? 'header-hidden' : ''}`;
+            h.innerText = k || "UNKNOWN";
             container.appendChild(h);
             groups[k].forEach(n => {
                 const c = document.createElement('div'); c.className = 'art-card';
@@ -158,8 +153,7 @@ async function showDetails(c, id, isTwoStep) {
     const m = document.getElementById('modalData');
     try {
         const res = await fetch(`/api/view?address=${c}&id=${id}`);
-        const data = await res.json(), n = data.nft;
-        const imgUrl = n.image_url || n.display_image_url;
+        const data = await res.json(), n = data.nft, imgUrl = n.image_url || n.display_image_url;
         m.innerHTML = `<div class="modal-body">
             <div class="modal-img-container"><img src="${imgUrl}" id="modalMainImg"></div>
             <div class="modal-text-content">
