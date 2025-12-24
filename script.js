@@ -4,11 +4,23 @@ const header = document.getElementById('mainHeader'), bottomNav = document.getEl
 const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect'), backToTop = document.getElementById('backToTop');
 
 let allNfts = [], displayList = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
+let touchX = 0, touchY = 0;
 
 window.onload = () => {
     const saved = sessionStorage.getItem('tempWallet');
     if (saved) { input.value = saved; fetchArt(true); sessionStorage.removeItem('tempWallet'); }
 };
+
+// UNIVERSAL SWIPE
+document.addEventListener('touchstart', e => { touchX = e.changedTouches[0].screenX; touchY = e.changedTouches[0].screenY; }, {passive: true});
+document.addEventListener('touchend', e => {
+    const xDiff = e.changedTouches[0].screenX - touchX, yDiff = Math.abs(e.changedTouches[0].screenY - touchY);
+    if (Math.abs(xDiff) > 100 && yDiff < 60) {
+        const mode = document.documentElement.getAttribute('data-view');
+        if (xDiff > 0 && mode === 'grid') switchView('snap');
+        if (xDiff < 0 && mode === 'snap') switchView('grid');
+    }
+}, {passive: true});
 
 const setUIHidden = (hidden) => {
     header.classList.toggle('ui-hidden', hidden);
@@ -27,9 +39,26 @@ gallery.onscroll = () => {
 
 function updateCounter(slider) {
     setUIHidden(true);
-    const index = Math.round(slider.scrollLeft / slider.offsetWidth);
+    const index = Math.round(slider.scrollLeft / window.innerWidth);
     const counter = slider.parentElement.querySelector('.collection-counter');
     if (counter) counter.innerText = `${index + 1} / ${slider.children.length}`;
+}
+
+async function downloadImage(url, name) {
+    try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = name || "art-download";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(blobUrl);
+    } catch (e) {
+        window.open(url, '_blank');
+    }
 }
 
 async function fetchArt(isNew = false) {
@@ -82,7 +111,16 @@ function renderAll(filter = "") {
             const curG = sort === 'project' ? n.collection : sort === 'name' ? (n.name||"#")[0].toUpperCase() : "";
             if (sort !== 'none' && curG !== lastG) {
                 const h = document.createElement('div'); h.className = 'grid-header'; h.innerText = curG || "UNKNOWN";
-                gallery.appendChild(h); lastG = curG;
+                gallery.appendChild(h);
+                h.onclick = () => {
+                    h.classList.toggle('collapsed');
+                    let next = h.nextElementSibling;
+                    while(next && !next.classList.contains('grid-header')) {
+                        next.classList.toggle('collapsed-group');
+                        next = next.nextElementSibling;
+                    }
+                };
+                lastG = curG;
             }
             const c = document.createElement('div'); c.className = 'art-card';
             c.innerHTML = `<img src="${n.image_url || n.display_image_url}">`;
@@ -111,10 +149,28 @@ async function showDetails(c, id, isTwoStep) {
     try {
         const res = await fetch(`/api/view?address=${c}&id=${id}`);
         const data = await res.json(), n = data.nft;
-        m.innerHTML = `<div class="modal-body"><div class="modal-img-container"><img src="${n.image_url || n.display_image_url}" id="modalMainImg"></div><div class="modal-text-content"><h2>${n.name || 'UNTITLED'}</h2><p>${n.collection || ''}</p><p>${n.description || ''}</p><a href="${n.opensea_url}" target="_blank" class="os-btn">VIEW ON OPENSEA</a></div></div>`;
+        const imgUrl = n.image_url || n.display_image_url;
+        m.innerHTML = `<div class="modal-body">
+            <div class="modal-img-container"><img src="${imgUrl}" id="modalMainImg"></div>
+            <div class="modal-text-content">
+                <h2 style="font-weight:900;">${n.name || 'UNTITLED'}</h2>
+                <p style="opacity:0.5; font-size:12px;">${n.collection || ''}</p>
+                <p style="margin-top:10px; font-size:14px; opacity:0.8;">${n.description || ''}</p>
+                <a href="${n.opensea_url}" target="_blank" class="os-btn">VIEW ON OPENSEA</a>
+                <button class="save-btn" id="saveImageBtn">SAVE IMAGE</button>
+            </div>
+        </div>`;
+        document.getElementById('saveImageBtn').onclick = () => downloadImage(imgUrl, n.name);
         m.querySelector('.modal-img-container').onclick = () => { if(isTwoStep) document.querySelector('.modal-content').classList.toggle('show-details'); };
         if(!isTwoStep) document.querySelector('.modal-content').classList.add('show-details');
     } catch (e) {}
+}
+
+function switchView(v) {
+    document.documentElement.setAttribute('data-view', v);
+    document.getElementById('navHome').classList.toggle('active', v === 'snap');
+    document.getElementById('navGrid').classList.toggle('active', v === 'grid');
+    renderAll();
 }
 
 document.getElementById('themeToggle').onclick = () => {
@@ -125,5 +181,5 @@ document.getElementById('goBtn').onclick = () => fetchArt(true);
 document.getElementById('shuffleBtn').onclick = () => { displayList.sort(() => Math.random() - 0.5); renderAll(); gallery.scrollTo(0,0); };
 document.getElementById('backToTop').onclick = () => gallery.scrollTo({top:0, behavior:'smooth'});
 document.querySelector('.close-btn').onclick = () => modal.classList.add('hidden');
-document.getElementById('navHome').onclick = () => { document.documentElement.setAttribute('data-view', 'snap'); renderAll(); };
-document.getElementById('navGrid').onclick = () => { document.documentElement.setAttribute('data-view', 'grid'); renderAll(); };
+document.getElementById('navHome').onclick = () => switchView('snap');
+document.getElementById('navGrid').onclick = () => switchView('grid');
