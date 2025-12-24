@@ -59,7 +59,7 @@ gallery.addEventListener('touchstart', e => {
 gallery.addEventListener('touchmove', e => {
     const dx = Math.abs(e.touches[0].clientX - touchStartX);
     const dy = Math.abs(e.touches[0].clientY - touchStartY);
-    // If swiping horizontal in snap mode, hide the headers for a cleaner look
+    // Hide UI on horizontal swipe move
     if (dx > 10 && dx > dy) setUIHidden(true);
 }, {passive: true});
 
@@ -72,8 +72,7 @@ gallery.addEventListener('touchend', e => {
         else if (dx < 0 && mode === 'snap') switchView('grid');
     }
     if (gallery.scrollTop <= 0 && dy > 130) fetchArt(true);
-    // Show headers back if we stopped swiping horizontally
-    if (Math.abs(dx) > 10) setTimeout(() => setUIHidden(false), 300);
+    // UI remains hidden until an explicit vertical scroll up is performed
 }, {passive: true});
 
 async function fetchArt(isNew = false) {
@@ -140,7 +139,6 @@ function renderAll(filter = "") {
             container.appendChild(h); container.appendChild(itemsDiv); gallery.appendChild(container);
         });
     }
-    // Search Bar injection logic...
     let sc = document.getElementById('searchContainer');
     if (sort === 'project') {
         if (!sc) {
@@ -176,9 +174,7 @@ async function showDetails(c, id, isTwoStep) {
         if (isTwoStep) {
             content.classList.add('show-hint');
             m.querySelector('img').onclick = () => content.classList.toggle('show-details');
-        } else {
-            content.classList.add('show-details');
-        }
+        } else { content.classList.add('show-details'); }
         document.getElementById('saveImageBtn').onclick = () => downloadImage(imgUrl, n.name);
     } catch (e) { modal.classList.add('hidden'); }
 }
@@ -202,9 +198,6 @@ function switchView(v) {
 document.getElementById('goBtn').onclick = () => fetchArt(true);
 document.getElementById('shuffleBtn').onclick = () => { displayList.sort(() => Math.random() - 0.5); renderAll(); gallery.scrollTo(0,0); };
 document.getElementById('backToTop').onclick = () => gallery.scrollTo({top:0, behavior:'smooth'});
-document.querySelector('.close-btn').onclick = () => { 
-    modal.classList.add('hidden'); 
-    document.querySelector('.modal-content').classList.remove('show-details', 'show-hint'); 
-};
+document.querySelector('.close-btn').onclick = () => { modal.classList.add('hidden'); document.querySelector('.modal-content').classList.remove('show-details', 'show-hint'); };
 document.getElementById('navHome').onclick = () => switchView('snap');
 document.getElementById('navGrid').onclick = () => switchView('grid');
