@@ -8,51 +8,66 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <div id="toast" class="toast hidden">LINK COPIED</div>
+
+    <div id="toast" class="loading-popup">ALL ASSETS LOADED</div>
 
     <header id="mainHeader">
         <div class="header-content">
             <div class="logo-row">
                 <h1>VIEW</h1>
-                <button id="themeToggle" class="icon-btn"><i data-lucide="sun"></i></button>
+                <button id="themeToggle" class="icon-btn">
+                    <i data-lucide="sun"></i>
+                </button>
             </div>
+
             <div class="search-box">
                 <input type="text" id="walletInput" placeholder="ENTER 0x ADDRESS">
                 <button id="goBtn"><i data-lucide="arrow-right"></i></button>
             </div>
+
             <div id="dynamicControls" class="hidden">
                 <div class="controls-row">
-                    <button id="shuffleBtn"><i data-lucide="shuffle"></i> SHUFFLE </button>
+                    <button id="shuffleBtn">SHUFFLE</button>
                     <div id="viewControls">
                         <select id="sortSelect">
                             <option value="none">SORT: DEFAULT</option>
                             <option value="project">BY PROJECT</option>
-                            <option value="artist">BY ARTIST</option>
                             <option value="name">BY NAME</option>
                         </select>
                     </div>
                 </div>
-            </div>
+                </div>
         </div>
     </header>
 
     <main id="gallery" class="snap-container"></main>
 
     <nav id="bottomNav" class="hidden">
-        <div class="nav-item active" id="navHome"><i data-lucide="home"></i><span>HOME</span></div>
-        <div class="nav-item" id="navGrid"><i data-lucide="layout-grid"></i><span>GRID</span></div>
+        <div class="nav-item active" id="navHome">
+            <i data-lucide="home"></i>
+            <span>HOME</span>
+        </div>
+        <div class="nav-item" id="navGrid">
+            <i data-lucide="layout-grid"></i>
+            <span>GRID</span>
+        </div>
     </nav>
 
     <div id="detailModal" class="modal hidden">
-        <div class="modal-overlay"></div>
         <div class="modal-content">
             <div class="modal-header-actions">
-                <button id="modalShareBtn" class="modal-icon-btn"><i data-lucide="share-2"></i></button>
-                <button class="close-btn modal-icon-btn"><i data-lucide="x"></i></button>
+                <button id="modalShareBtn" class="modal-icon-btn">
+                    <i data-lucide="share-2"></i>
+                </button>
+                <button class="close-btn modal-icon-btn">
+                    <i data-lucide="x"></i>
+                </button>
             </div>
+            
             <div id="modalData"></div>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
