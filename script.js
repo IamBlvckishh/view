@@ -6,6 +6,23 @@ const modal = document.getElementById('detailModal'), sortSelect = document.getE
 let allNfts = [], displayList = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
 let touchX = 0, touchY = 0;
 
+// COUNTER OBSERVER
+const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const slide = entry.target;
+            const index = slide.getAttribute('data-index');
+            const total = slide.getAttribute('data-total');
+            const counter = slide.parentElement.parentElement.querySelector('.collection-counter');
+            if (counter) counter.innerText = `${parseInt(index) + 1} / ${total}`;
+        }
+    });
+}, { threshold: 0.6 });
+
+function setupCounterObserver() {
+    document.querySelectorAll('.collection-slide').forEach(slide => counterObserver.observe(slide));
+}
+
 window.onload = () => {
     const saved = sessionStorage.getItem('tempWallet');
     if (saved) { input.value = saved; fetchArt(true); sessionStorage.removeItem('tempWallet'); }
@@ -37,28 +54,16 @@ gallery.onscroll = () => {
     if (cur + gallery.clientHeight >= gallery.scrollHeight - 1000 && continuation && !isFetching) fetchArt();
 };
 
-function updateCounter(slider) {
-    setUIHidden(true);
-    const index = Math.round(slider.scrollLeft / window.innerWidth);
-    const counter = slider.parentElement.querySelector('.collection-counter');
-    if (counter) counter.innerText = `${index + 1} / ${slider.children.length}`;
-}
-
 async function downloadImage(url, name) {
     try {
         const response = await fetch(url);
         const blob = await response.blob();
         const blobUrl = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = name || "art-download";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(blobUrl);
-    } catch (e) {
-        window.open(url, '_blank');
-    }
+        a.href = blobUrl; a.download = name || "art-download";
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a); window.URL.revokeObjectURL(blobUrl);
+    } catch (e) { window.open(url, '_blank'); }
 }
 
 async function fetchArt(isNew = false) {
@@ -94,38 +99,43 @@ function renderAll(filter = "") {
         Object.keys(groups).forEach(k => {
             const items = groups[k], card = document.createElement('div'), slider = document.createElement('div');
             card.className = 'art-card'; slider.className = 'collection-slider';
-            slider.addEventListener('scroll', () => updateCounter(slider));
+            slider.addEventListener('scroll', () => setUIHidden(true), {passive: true});
             items.forEach((n, idx) => {
-                const s = document.createElement('div'); s.className = 'collection-slide';
-                s.innerHTML = `<div class="collection-counter">${idx + 1} / ${items.length}</div><img src="${n.image_url || n.display_image_url}">`;
+                const s = document.createElement('div'); 
+                s.className = 'collection-slide'; s.setAttribute('data-index', idx); s.setAttribute('data-total', items.length);
+                s.innerHTML = `<div class="collection-counter">1 / ${items.length}</div><img src="${n.image_url || n.display_image_url}">`;
                 s.onclick = () => showDetails(n.contract, n.identifier, false);
                 slider.appendChild(s);
             });
             card.appendChild(slider); gallery.appendChild(card);
         });
+        setupCounterObserver();
     } else {
         if (sort === 'project') list.sort((a,b) => (a.collection||"").localeCompare(b.collection||""));
         else if (sort === 'name') list.sort((a,b) => (a.name||"").localeCompare(b.name||""));
-        let lastG = "";
+        
+        let groups = {};
         list.forEach(n => {
-            const curG = sort === 'project' ? n.collection : sort === 'name' ? (n.name||"#")[0].toUpperCase() : "";
-            if (sort !== 'none' && curG !== lastG) {
-                const h = document.createElement('div'); h.className = 'grid-header'; h.innerText = curG || "UNKNOWN";
-                gallery.appendChild(h);
-                h.onclick = () => {
-                    h.classList.toggle('collapsed');
-                    let next = h.nextElementSibling;
-                    while(next && !next.classList.contains('grid-header')) {
-                        next.classList.toggle('collapsed-group');
-                        next = next.nextElementSibling;
-                    }
-                };
-                lastG = curG;
-            }
-            const c = document.createElement('div'); c.className = 'art-card';
-            c.innerHTML = `<img src="${n.image_url || n.display_image_url}">`;
-            c.onclick = () => showDetails(n.contract, n.identifier, true);
-            gallery.appendChild(c);
+            const k = sort === 'project' ? n.collection : sort === 'name' ? (n.name||"#")[0].toUpperCase() : "ALL";
+            if (!groups[k]) groups[k] = [];
+            groups[k].push(n);
+        });
+
+        Object.keys(groups).forEach(k => {
+            const container = document.createElement('div'); container.className = 'grid-group-container';
+            const h = document.createElement('div'); h.className = 'grid-header'; h.innerText = k || "UNKNOWN";
+            container.appendChild(h);
+            groups[k].forEach(n => {
+                const c = document.createElement('div'); c.className = 'art-card';
+                c.innerHTML = `<img src="${n.image_url || n.display_image_url}">`;
+                c.onclick = () => showDetails(n.contract, n.identifier, true);
+                container.appendChild(c);
+            });
+            h.onclick = () => {
+                h.classList.toggle('collapsed');
+                container.querySelectorAll('.art-card').forEach(card => card.classList.toggle('collapsed-group'));
+            };
+            gallery.appendChild(container);
         });
     }
     lucide.createIcons();
