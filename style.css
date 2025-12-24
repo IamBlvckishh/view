@@ -4,7 +4,6 @@
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
 body { background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; position: fixed; }
 
-/* REFRESH INDICATOR & SPINNER */
 #refreshIndicator { 
     width: 100%; display: flex; flex-direction: column; align-items: center; 
     justify-content: center; padding: 20px 0; font-size: 10px; font-weight: 900; 
@@ -31,18 +30,12 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
 
 .controls-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; }
 #shuffleBtn { background: var(--border); border: none; color: var(--text); padding: 8px 14px; border-radius: 20px; font-size: 10px; font-weight: 900; cursor: pointer; }
-#sortSelect { background: transparent; color: var(--text); border: none; font-size: 10px; font-weight: 800; outline: none; }
+#sortSelect { background: transparent; color: var(--text); border: none; font-size: 10px; font-weight: 800; outline: none; padding-right: 5px; }
 
 .search-container { width: 100%; margin-top: 5px; }
 #projectSearch { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 8px; font-size: 12px; outline: none; }
 
-.snap-container { 
-    height: 100vh; width: 100vw; 
-    overflow-y: scroll; 
-    overflow-x: hidden; /* LOCKS VERTICAL SCROLL ONLY */
-    -webkit-overflow-scrolling: touch; 
-    scroll-behavior: smooth; 
-}
+.snap-container { height: 100vh; width: 100vw; overflow-y: scroll; overflow-x: hidden; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
 
 /* SNAP VIEW */
 [data-view="snap"] .art-card { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; }
@@ -56,21 +49,15 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
 [data-view="grid"] .snap-container { scroll-snap-type: none !important; display: block !important; padding-top: 230px; padding-bottom: 100px; }
 .grid-group-container { display: block; position: relative; margin-bottom: 2px; }
 .grid-items-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; }
-
 .grid-header { background: var(--bg); padding: 15px 20px; font-size: 11px; font-weight: 900; border-bottom: 1px solid var(--border); position: sticky; top: 210px; z-index: 50; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
 .grid-header::after { content: '−'; font-size: 14px; }
 .grid-header.collapsed::after { content: '+'; }
 .header-hidden { display: none !important; }
 .collapsed-group { display: none !important; }
-
 [data-view="grid"] .art-card { width: 100% !important; height: auto !important; aspect-ratio: 1/1 !important; display: block !important; }
 [data-view="grid"] .art-card img { width: 100%; height: 100%; object-fit: cover; }
 
 .collection-counter { position: absolute; top: 175px; right: 20px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 10px; border-radius: 15px; font-size: 10px; font-weight: 900; z-index: 10; pointer-events: none; }
-.loading-popup { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 8px 16px; border-radius: 20px; font-size: 10px; font-weight: 900; z-index: 5000; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
-
-#backToTop { position: fixed; bottom: 85px; right: 20px; width: 45px; height: 45px; background: var(--text); color: var(--bg); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transform: translateY(10px); transition: 0.3s; }
-#backToTop.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
 
 /* MODAL */
 .modal { position: fixed; inset: 0; z-index: 3000; background: #000; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; }
