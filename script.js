@@ -6,20 +6,17 @@ const modal = document.getElementById('detailModal'), sortSelect = document.getE
 let allNfts = [], displayList = [], continuation = null, currentWallet = "", isFetching = false;
 let touchStartX = 0, touchStartY = 0;
 
-// FIXED PRECISION COUNTER
-const counterObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const slide = entry.target;
-            const index = slide.getAttribute('data-index');
-            const total = slide.getAttribute('data-total');
-            const counter = slide.closest('.art-card').querySelector('.collection-counter');
-            if (counter) counter.innerText = `${parseInt(index) + 1} / ${total}`;
-        }
-    });
-}, { threshold: 0.6 });
+// COUNTER LOGIC: Calculation based on Scroll Position
+function updateCounter(slider) {
+    const scrollLeft = slider.scrollLeft;
+    const width = slider.clientWidth;
+    const idx = Math.round(scrollLeft / width);
+    const total = slider.children.length;
+    const counter = slider.parentElement.querySelector('.collection-counter');
+    if (counter) counter.innerText = `${idx + 1} / ${total}`;
+}
 
-// UNIVERSAL SWIPE & PULL-TO-REFRESH
+// UNIVERSAL SWIPE & PULL TO REFRESH
 gallery.addEventListener('touchstart', e => {
     touchStartX = e.touches[0].clientX;
     touchStartY = e.touches[0].clientY;
@@ -27,6 +24,7 @@ gallery.addEventListener('touchstart', e => {
 
 gallery.addEventListener('touchmove', e => {
     const y = e.touches[0].clientY;
+    // Pull to Refresh UI
     if (gallery.scrollTop <= 0 && y > touchStartY + 50) {
         const ri = document.getElementById('refreshIndicator');
         ri.style.opacity = "1";
@@ -38,15 +36,17 @@ gallery.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
     const dy = e.changedTouches[0].clientY - touchStartY;
 
-    // Swipe logic
+    // View Switching Swipe
     if (Math.abs(dx) > 100 && Math.abs(dy) < 80) {
         const mode = document.documentElement.getAttribute('data-view');
         if (dx > 0 && mode === 'grid') switchView('snap');
         else if (dx < 0 && mode === 'snap') switchView('grid');
     }
-    // Refresh logic
+    // Refresh Trigger
     if (gallery.scrollTop <= 0 && dy > 120) fetchArt(true);
-    document.getElementById('refreshIndicator').style.opacity = "0";
+    
+    const ri = document.getElementById('refreshIndicator');
+    if (ri) ri.style.opacity = "0";
 }, {passive: true});
 
 async function fetchArt(isNew = false) {
@@ -81,19 +81,20 @@ function renderAll(filter = "") {
             card.className = 'art-card';
             card.innerHTML = `<div class="collection-counter">1 / ${items.length}</div>`;
             const slider = document.createElement('div'); slider.className = 'collection-slider';
-            items.forEach((n, idx) => {
+            
+            slider.addEventListener('scroll', () => updateCounter(slider), {passive: true});
+
+            items.forEach((n) => {
                 const s = document.createElement('div'); s.className = 'collection-slide';
-                s.setAttribute('data-index', idx); s.setAttribute('data-total', items.length);
                 s.innerHTML = `<img src="${n.image_url || n.display_image_url}">`;
                 s.onclick = () => showDetails(n.contract, n.identifier, false);
                 slider.appendChild(s);
-                counterObserver.observe(s);
             });
             card.appendChild(slider); gallery.appendChild(card);
         });
     } else {
         let groups = {};
-        if (sort === 'none') groups["ALL"] = list;
+        if (sort === 'none') { groups["ALL"] = list; }
         else {
             if (sort === 'project') list.sort((a,b) => (a.collection||"").localeCompare(b.collection||""));
             list.forEach(n => {
@@ -103,17 +104,10 @@ function renderAll(filter = "") {
         }
         Object.keys(groups).forEach(k => {
             const groupDiv = document.createElement('div'); groupDiv.className = 'grid-group';
-            if (sort !== 'none') {
-                const h = document.createElement('div'); h.className = 'grid-header';
-                h.innerHTML = `<span>${k}</span><span>—</span>`;
-                h.onclick = () => {
-                    const items = groupDiv.querySelector('.grid-items');
-                    const isHid = items.style.display === 'none';
-                    items.style.display = isHid ? 'grid' : 'none';
-                    h.querySelector('span:last-child').innerText = isHid ? '—' : '+';
-                };
-                groupDiv.appendChild(h);
-            }
+            const h = document.createElement('div');
+            h.className = `grid-header ${sort === 'none' ? 'header-hidden' : ''}`;
+            h.innerHTML = `<span>${k}</span><span>—</span>`;
+            
             const itemsDiv = document.createElement('div'); itemsDiv.className = 'grid-items';
             groups[k].forEach(n => {
                 const c = document.createElement('div'); c.className = 'art-card';
@@ -121,7 +115,14 @@ function renderAll(filter = "") {
                 c.onclick = () => showDetails(n.contract, n.identifier, true);
                 itemsDiv.appendChild(c);
             });
-            groupDiv.appendChild(itemsDiv); gallery.appendChild(groupDiv);
+
+            h.onclick = () => {
+                const isHid = itemsDiv.style.display === 'none';
+                itemsDiv.style.display = isHid ? 'grid' : 'none';
+                h.querySelector('span:last-child').innerText = isHid ? '—' : '+';
+            };
+
+            groupDiv.appendChild(h); groupDiv.appendChild(itemsDiv); gallery.appendChild(groupDiv);
         });
     }
     lucide.createIcons();
@@ -166,6 +167,5 @@ function switchView(v) {
 }
 
 document.getElementById('goBtn').onclick = () => fetchArt(true);
-document.querySelector('.close-btn').onclick = () => { modal.classList.add('hidden'); document.querySelector('.modal-content').classList.remove('show-details'); };
 document.getElementById('navHome').onclick = () => switchView('snap');
 document.getElementById('navGrid').onclick = () => switchView('grid');
