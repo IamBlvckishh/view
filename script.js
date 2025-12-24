@@ -6,13 +6,6 @@ const modal = document.getElementById('detailModal'), sortSelect = document.getE
 let allNfts = [], continuation = null, currentWallet = "", isFetching = false, lastScrollY = 0;
 let touchX = 0, touchY = 0;
 
-// BACK TO TOP
-const bttBtn = document.createElement('button');
-bttBtn.className = "back-to-top hidden";
-bttBtn.innerHTML = '<i data-lucide="arrow-up"></i>';
-document.body.appendChild(bttBtn);
-bttBtn.onclick = () => gallery.scrollTo({ top: 0, behavior: 'smooth' });
-
 // UNIVERSAL SWIPE
 document.addEventListener('touchstart', e => { touchX = e.changedTouches[0].screenX; touchY = e.changedTouches[0].screenY; }, {passive: true});
 document.addEventListener('touchend', e => {
@@ -29,10 +22,6 @@ gallery.onscroll = () => {
     const cur = gallery.scrollTop;
     if (cur > lastScrollY && cur > 100) { header.classList.add('ui-hidden'); bottomNav.classList.add('ui-hidden'); }
     else if (cur < lastScrollY) { header.classList.remove('ui-hidden'); bottomNav.classList.remove('ui-hidden'); }
-    
-    if (document.documentElement.getAttribute('data-view') === 'grid' && cur > 500) bttBtn.classList.remove('hidden');
-    else bttBtn.classList.add('hidden');
-    
     lastScrollY = cur;
     if (gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight - 1000 && continuation && !isFetching) fetchArt();
 };
@@ -62,6 +51,7 @@ async function fetchArt(isNew = false) {
 function renderAll() {
     gallery.innerHTML = "";
     const mode = document.documentElement.getAttribute('data-view');
+    
     if (mode === 'snap') {
         const groups = {};
         allNfts.forEach((n, i) => { const k = n.collection || i; if (!groups[k]) groups[k] = []; groups[k].push(n); });
