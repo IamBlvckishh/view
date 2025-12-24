@@ -6,7 +6,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
 body { background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; position: fixed; }
 
-/* PULL-TO-REFRESH INDICATOR */
+/* REFRESH INDICATOR */
 #refreshIndicator { 
     width: 100%; display: flex; flex-direction: column; align-items: center; 
     justify-content: center; padding: 20px 0; font-size: 10px; font-weight: 900; 
@@ -19,7 +19,7 @@ body { background: var(--bg); color: var(--text); overflow: hidden; height: 100v
 }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* NEW ASSET TOAST */
+/* ASSET TOAST */
 #assetToast {
     position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%) translateY(20px);
     background: var(--text); color: var(--bg); padding: 10px 24px; border-radius: 25px;
@@ -29,7 +29,7 @@ body { background: var(--bg); color: var(--text); overflow: hidden; height: 100v
 }
 #assetToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* HEADER NAVIGATION */
+/* MAIN HEADER */
 header { position: fixed; top: 0; width: 100%; z-index: 1000; padding: 15px 20px; background: var(--bg); border-bottom: 1px solid var(--border); transition: transform 0.3s ease; }
 .ui-hidden { transform: translateY(-100%) !important; }
 #bottomNav.ui-hidden { transform: translateY(100%) !important; }
@@ -38,10 +38,9 @@ header { position: fixed; top: 0; width: 100%; z-index: 1000; padding: 15px 20px
 h1 { font-size: 22px; letter-spacing: 0.5em; font-weight: 900; }
 .icon-btn { background: none; border: none; color: var(--text); cursor: pointer; position: absolute; right: 0; }
 
-/* INPUTS & SEARCH */
 .search-box { background: var(--card); border-radius: 12px; padding: 0 15px; display: flex; border: 1px solid var(--border); margin-bottom: 10px; align-items: center; }
 input { background: transparent; border: none; color: var(--text); flex: 1; padding: 12px 0; outline: none; font-size: 14px; }
-#goBtn { background: none; border: none; color: var(--text); padding-left: 10px; }
+#goBtn { background: none; border: none; color: var(--text); }
 
 .controls-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; }
 #shuffleBtn { background: var(--border); border: none; color: var(--text); padding: 8px 14px; border-radius: 20px; font-size: 10px; font-weight: 900; cursor: pointer; }
@@ -50,10 +49,10 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
 .search-container { width: 100%; margin-top: 5px; }
 #projectSearch { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 8px; font-size: 12px; outline: none; }
 
-/* GALLERY CONTAINERS */
+/* VIEW CONTAINERS */
 .snap-container { height: 100vh; width: 100vw; overflow-y: scroll; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
 
-/* SNAP VIEW (FULLSCREEN) */
+/* SNAP VIEW */
 [data-view="snap"] .art-card { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; }
 [data-view="snap"] .snap-container { scroll-snap-type: y mandatory; }
 .collection-slider { display: flex; width: 100%; height: 100%; overflow-x: scroll; scroll-snap-type: x mandatory; scrollbar-width: none; }
@@ -70,8 +69,7 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
     background: var(--bg); padding: 15px 20px; font-size: 11px; font-weight: 900; 
     border-bottom: 1px solid var(--border); position: relative; z-index: 50; 
     text-transform: uppercase; display: flex; justify-content: space-between; 
-    align-items: center; cursor: pointer; will-change: transform, opacity;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    align-items: center; cursor: pointer; transition: transform 0.3s ease, opacity 0.3s ease;
 }
 .grid-header.ui-hidden { opacity: 0 !important; pointer-events: none; }
 .grid-header::after { content: '−'; font-size: 14px; }
@@ -82,52 +80,38 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
 [data-view="grid"] .art-card { width: 100% !important; height: auto !important; aspect-ratio: 1/1 !important; display: block !important; }
 [data-view="grid"] .art-card img { width: 100%; height: 100%; object-fit: cover; }
 
-/* COUNTER & BACK TO TOP */
+/* UI ELEMENTS */
 .collection-counter { position: absolute; top: 175px; right: 20px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 10px; border-radius: 15px; font-size: 10px; font-weight: 900; z-index: 10; pointer-events: none; }
 #backToTop { position: fixed; bottom: 85px; right: 20px; width: 45px; height: 45px; background: var(--text); color: var(--bg); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transform: translateY(10px); transition: 0.3s; }
 #backToTop.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
 
-/* MODAL UI & LOCKING */
+/* MODAL & NAV LOCKING */
 .modal { position: fixed; inset: 0; z-index: 3000; background: #000; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; }
 .modal-content { width: 100%; min-height: 100%; display: flex; flex-direction: column; position: relative; }
 
-.modal-header-actions { 
-    position: fixed; top: 0; left: 0; width: 100%; 
-    padding: 25px; display: flex; justify-content: space-between; 
-    align-items: center; z-index: 3200; pointer-events: none; 
-}
-.modal-icon-btn { 
-    pointer-events: auto; background: rgba(0,0,0,0.5); border: none; 
-    color: #fff; width: 48px; height: 48px; border-radius: 50%; 
-    display: flex; align-items: center; justify-content: center; 
-    backdrop-filter: blur(10px); 
-}
+.modal-header-actions { position: fixed; top: 0; left: 0; width: 100%; padding: 25px; display: flex; justify-content: space-between; align-items: center; z-index: 3200; pointer-events: none; }
+.modal-icon-btn { pointer-events: auto; background: rgba(0,0,0,0.5); border: none; color: #fff; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
 
 #detailHint {
-    position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.6); color: #fff; padding: 8px 16px;
-    border-radius: 20px; font-size: 10px; font-weight: 900;
-    pointer-events: none; opacity: 0; transition: 0.3s; z-index: 3100;
+    position: absolute; bottom: 35%; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.6); color: #fff; padding: 8px 16px; border-radius: 20px;
+    font-size: 10px; font-weight: 900; pointer-events: none; opacity: 0; transition: 0.3s; z-index: 3100;
 }
 .show-hint #detailHint { opacity: 1; }
 .show-details #detailHint { opacity: 0 !important; }
 
 .modal-body { flex: 1; display: flex; flex-direction: column; align-items: center; width: 100%; padding-top: 100px; padding-bottom: 100px; }
-#modalMainImg { max-width: 95vw; max-height: 70vh; object-fit: contain; z-index: 3050; }
-
+#modalMainImg { max-width: 95vw; max-height: 70vh; object-fit: contain; }
 .modal-text-content { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 25px !important; margin: 20px; width: calc(100% - 40px) !important; max-width: 450px; opacity: 0; transform: translateY(20px); transition: 0.4s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 .show-details .modal-text-content { opacity: 1; height: auto; transform: translateY(0); }
 
-/* BUTTONS IN MODAL */
 .os-btn, .save-btn { display: block; width: 100%; padding: 16px; text-align: center; border-radius: 12px; font-weight: 900; text-decoration: none; margin-top: 15px; }
 .os-btn { background: #fff; color: #000; margin-top: 30px; }
 .save-btn { background: var(--border); color: var(--text); border: 1px solid var(--border); cursor: pointer; }
 
-/* BOTTOM NAVIGATION */
+/* BOTTOM NAV */
 #bottomNav { position: fixed; bottom: 0; width: 100%; height: 65px; background: var(--bg); display: flex; justify-content: center; gap: 60px; padding-top: 10px; border-top: 1px solid var(--border); z-index: 1000; transition: transform 0.3s ease; }
 .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.4; color: var(--text); cursor: pointer; }
 .nav-item.active { opacity: 1; }
 .nav-item span { font-size: 8px; font-weight: 900; }
-
-/* UTILS */
 .hidden { display: none !important; }
