@@ -200,7 +200,8 @@ document.getElementById('navGrid').onclick = () => switchView('grid');
 // SANTA CLICK -> TWEET PROMPT
 document.getElementById('santaBtn').onclick = () => {
     const line1 = "Hi 'tag a recipient' 🎄,";
-    const line2 = "Merry Christmas, May this season bring joy, happiness, and prosperity, and fill your lives with love and compassion.";
+    const line2 = "Merry Christmas, May this season bring joy, happiness, and prosperity, and fill your lives with love and compassion.❤️";
+    const line3 = "Oh, and @blvckishh1 says hi too!🎅🏾";
     
     // Using \n for new lines in the string, encodeURIComponent handles the rest
     const fullMessage = `${line1}\n\n${line2}`;
