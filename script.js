@@ -5,7 +5,7 @@ const modal = document.getElementById('detailModal'), sortSelect = document.getE
 
 let allNfts = [], displayList = [], currentWallet = "", isFetching = false, lastScrollY = 0;
 
-// --- 1. MEMORY & INITIALIZATION ---
+// --- 1. MEMORY & THEME ---
 window.addEventListener('load', () => {
     const saved = localStorage.getItem('savedWallet');
     if (saved) { input.value = saved; fetchArt(true); }
@@ -13,15 +13,14 @@ window.addEventListener('load', () => {
 });
 
 document.getElementById('themeToggle').onclick = () => {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const next = isDark ? 'light' : 'dark';
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
     const icon = document.querySelector('#themeToggle i');
     icon.setAttribute('data-lucide', next === 'light' ? 'moon' : 'sun');
     lucide.createIcons();
 };
 
-// --- 2. DATA HANDLING ---
+// --- 2. DATA ENGINE ---
 async function fetchArt(isNew = false) {
     currentWallet = input.value.trim();
     if (!currentWallet || isFetching) return;
@@ -48,10 +47,7 @@ function renderAll() {
     
     if (mode === 'snap') {
         const groups = {};
-        displayList.forEach(n => { 
-            const k = n.collection || "OTHER"; 
-            if(!groups[k]) groups[k] = []; groups[k].push(n); 
-        });
+        displayList.forEach(n => { const k = n.collection || "OTHER"; if(!groups[k]) groups[k] = []; groups[k].push(n); });
         Object.keys(groups).forEach(k => {
             const items = groups[k], card = document.createElement('div'), slider = document.createElement('div');
             card.className = 'art-card'; slider.className = 'collection-slider';
@@ -59,7 +55,8 @@ function renderAll() {
             
             slider.onscroll = () => {
                 const idx = Math.round(slider.scrollLeft / window.innerWidth);
-                card.querySelector('.collection-counter').innerText = `${idx + 1} / ${items.length}`;
+                const counter = card.querySelector('.collection-counter');
+                if(counter) counter.innerText = `${idx + 1} / ${items.length}`;
             };
 
             items.forEach(n => {
@@ -79,7 +76,6 @@ function renderAll() {
                 if (!groups[k]) groups[k] = []; groups[k].push(n);
             });
         }
-        
         Object.keys(groups).sort().forEach(k => {
             const h = document.createElement('div'); h.className = 'grid-header'; h.innerText = k;
             const wrapper = document.createElement('div'); wrapper.className = 'grid-items-wrapper';
@@ -94,11 +90,11 @@ function renderAll() {
     }
 }
 
-// --- 3. MODAL & INTERACTIVE BUTTONS ---
+// --- 3. MODAL & SAVE ---
 async function showDetails(c, id, isTwoStep) {
     modal.classList.remove('hidden');
     const m = document.getElementById('modalData');
-    m.innerHTML = `<div class="modal-body"><div class="spinner"></div></div>`;
+    m.innerHTML = `<div class="modal-body"><div style="padding:50px; font-weight:900;">LOADING...</div></div>`;
     try {
         const res = await fetch(`/api/view?address=${c}&id=${id}`);
         const data = await res.json(), n = data.nft;
@@ -119,20 +115,16 @@ async function showDetails(c, id, isTwoStep) {
 
         const btn = document.getElementById('saveImageBtn');
         btn.onclick = async () => {
-            const originalText = btn.innerText;
-            btn.innerText = "SAVING...";
+            const oldText = btn.innerText; btn.innerText = "SAVING...";
             await downloadImage(imgUrl, n.name);
-            btn.innerText = "✓ SAVED!";
-            btn.classList.add('success');
-            setTimeout(() => { btn.innerText = originalText; btn.classList.remove('success'); }, 2000);
+            btn.innerText = "✓ SAVED!"; btn.classList.add('success');
+            setTimeout(() => { btn.innerText = oldText; btn.classList.remove('success'); }, 2000);
         };
 
         const content = modal.querySelector('.modal-content');
         const img = document.getElementById('modalMainImg');
-        if (isTwoStep) { 
-            content.classList.add('show-hint'); 
-            img.onclick = () => content.classList.toggle('show-details'); 
-        } else { content.classList.add('show-details'); }
+        if (isTwoStep) { content.classList.add('show-hint'); img.onclick = () => content.classList.toggle('show-details'); }
+        else { content.classList.add('show-details'); }
     } catch (e) { modal.classList.add('hidden'); }
 }
 
@@ -148,33 +140,13 @@ async function downloadImage(url, name) {
     } catch (e) { window.open(url, '_blank'); }
 }
 
-// --- 4. NAVIGATION & CONTROLS ---
-document.getElementById('shuffleBtn').onclick = () => {
-    displayList.sort(() => Math.random() - 0.5);
-    renderAll();
-    gallery.scrollTo(0,0);
-};
-
-sortSelect.onchange = () => renderAll();
+// --- 4. CONTROLS ---
 document.getElementById('goBtn').onclick = () => fetchArt(true);
-document.querySelector('.close-btn').onclick = () => {
-    modal.classList.add('hidden');
-    modal.querySelector('.modal-content').classList.remove('show-details', 'show-hint');
-};
-
-document.getElementById('navHome').onclick = () => { 
-    document.documentElement.setAttribute('data-view', 'snap'); 
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    document.getElementById('navHome').classList.add('active');
-    renderAll(); 
-};
-
-document.getElementById('navGrid').onclick = () => { 
-    document.documentElement.setAttribute('data-view', 'grid'); 
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    document.getElementById('navGrid').classList.add('active');
-    renderAll(); 
-};
+document.getElementById('shuffleBtn').onclick = () => { displayList.sort(() => Math.random() - 0.5); renderAll(); gallery.scrollTo(0,0); };
+sortSelect.onchange = () => renderAll();
+document.querySelector('.close-btn').onclick = () => { modal.classList.add('hidden'); modal.querySelector('.modal-content').classList.remove('show-details', 'show-hint'); };
+document.getElementById('navHome').onclick = () => { document.documentElement.setAttribute('data-view', 'snap'); document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); document.getElementById('navHome').classList.add('active'); renderAll(); };
+document.getElementById('navGrid').onclick = () => { document.documentElement.setAttribute('data-view', 'grid'); document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); document.getElementById('navGrid').classList.add('active'); renderAll(); };
 
 gallery.onscroll = () => {
     const cur = gallery.scrollTop;
@@ -183,12 +155,8 @@ gallery.onscroll = () => {
     lastScrollY = cur;
 };
 
-// --- 5. FESTIVE DECOR ---
-document.getElementById('santaBtn').onclick = () => {
-    const t = document.getElementById('santaToast');
-    t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000);
-};
-
+// --- 5. SANTA & SNOW ---
+document.getElementById('santaBtn').onclick = () => { const t = document.getElementById('santaToast'); t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
 function initSnow() {
     const sc = document.createElement('div'); sc.id = 'snow-container'; document.body.appendChild(sc);
     setInterval(() => {
