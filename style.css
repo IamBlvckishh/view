@@ -87,6 +87,7 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
 #backToTop { position: fixed; bottom: 85px; right: 20px; width: 45px; height: 45px; background: var(--text); color: var(--bg); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transform: translateY(10px); transition: 0.3s; }
 #backToTop.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
 
+/* SNOW SYSTEM */
 #snow-container { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
 .snowflake { position: fixed; top: -10px; color: white; user-select: none; animation: fall linear forwards; font-size: 14px; }
 @keyframes fall { to { transform: translateY(105vh) rotate(360deg); } }
