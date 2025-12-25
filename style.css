@@ -38,7 +38,6 @@ header { position: fixed; top: 0; width: 100%; z-index: 1000; padding: 15px 20px
 h1 { font-size: 22px; letter-spacing: 0.5em; font-weight: 900; }
 .icon-btn { background: none; border: none; color: var(--text); cursor: pointer; position: absolute; right: 0; }
 
-/* SANTA BUTTON STYLE */
 .santa-btn { position: absolute; left: 0; background: none; border: none; font-size: 24px; cursor: pointer; z-index: 10; }
 
 .search-box { background: var(--card); border-radius: 12px; padding: 0 15px; display: flex; border: 1px solid var(--border); margin-bottom: 10px; align-items: center; }
@@ -87,15 +86,6 @@ input { background: transparent; border: none; color: var(--text); flex: 1; padd
 .collection-counter { position: absolute; top: 175px; right: 20px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 10px; border-radius: 15px; font-size: 10px; font-weight: 900; z-index: 10; pointer-events: none; }
 #backToTop { position: fixed; bottom: 85px; right: 20px; width: 45px; height: 45px; background: var(--text); color: var(--bg); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transform: translateY(10px); transition: 0.3s; }
 #backToTop.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
-
-/* SANTA TOAST & SNOW */
-#santaToast {
-    position: fixed; top: 100px; left: 50%; transform: translateX(-50%) scale(0.5);
-    background: #ff4d4d; color: white; padding: 12px 25px; border-radius: 50px;
-    font-weight: 900; opacity: 0; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 10000; border: 2px solid white; pointer-events: none; font-size: 12px;
-}
-#santaToast.show { opacity: 1; transform: translateX(-50%) scale(1); }
 
 #snow-container { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
 .snowflake { position: fixed; top: -10px; color: white; user-select: none; animation: fall linear forwards; font-size: 14px; }
