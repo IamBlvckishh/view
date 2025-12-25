@@ -14,7 +14,7 @@ window.addEventListener('load', () => {
     const savedWallet = localStorage.getItem('savedWallet'), savedTheme = localStorage.getItem('theme');
     if (savedWallet) { input.value = savedWallet; fetchArt(true); }
     if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
-    initSnow(); // Start Snow
+    initSnow(); 
 });
 
 function updateCounter(slider, collectionKey) {
@@ -197,11 +197,16 @@ document.querySelector('.close-btn').onclick = () => { modal.classList.add('hidd
 document.getElementById('navHome').onclick = () => switchView('snap');
 document.getElementById('navGrid').onclick = () => switchView('grid');
 
-// FESTIVE LOGIC
+// SANTA CLICK -> TWEET PROMPT
 document.getElementById('santaBtn').onclick = () => {
-    const t = document.getElementById('santaToast');
-    t.classList.add('show'); 
-    setTimeout(() => t.classList.remove('show'), 3000);
+    const line1 = "Hi 'tag a recipient' 🎄,";
+    const line2 = "Merry Christmas, May this season bring joy, happiness, and prosperity, and fill your lives with love and compassion.";
+    
+    // Using \n for new lines in the string, encodeURIComponent handles the rest
+    const fullMessage = `${line1}\n\n${line2}`;
+    const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(fullMessage)}`;
+    
+    window.open(tweetUrl, '_blank');
 };
 
 function initSnow() {
