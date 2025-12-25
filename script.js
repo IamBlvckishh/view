@@ -204,7 +204,7 @@ document.getElementById('santaBtn').onclick = () => {
     const line3 = "Oh, and @blvckishh1 says hi too!🎅🏾";
     
     // Using \n for new lines in the string, encodeURIComponent handles the rest
-    const fullMessage = `${line1}\n\n${line2}`;
+    const fullMessage = `${line1}\n\n${line2}\n\n${line3}`;
     const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(fullMessage)}`;
     
     window.open(tweetUrl, '_blank');
