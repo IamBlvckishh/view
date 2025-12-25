@@ -70,23 +70,43 @@ gallery.addEventListener('touchend', e => {
     if (gallery.scrollTop <= 0 && dy > 130) fetchArt(true);
 }, {passive: true});
 
+// ENS & OPEN SEA API FETCH
 async function fetchArt(isNew = false) {
-    currentWallet = input.value.trim();
-    if (!currentWallet || isFetching) return;
-    localStorage.setItem('savedWallet', currentWallet);
+    let walletQuery = input.value.trim();
+    if (!walletQuery || isFetching) return;
+    
     isFetching = true;
-    if (isNew) { allNfts = []; displayList = []; gallery.innerHTML = ""; snapPositions = {}; }
+    localStorage.setItem('savedWallet', walletQuery);
+
+    if (isNew) { 
+        allNfts = []; displayList = []; gallery.innerHTML = ""; snapPositions = {}; continuation = null; 
+    }
+
     try {
-        const res = await fetch(`/api/view?wallet=${currentWallet}${continuation ? `&next=${continuation}` : ''}`);
+        // STEP 1: RESOLVE ENS IF NECESSARY
+        if (walletQuery.toLowerCase().endsWith('.eth')) {
+            const ensRes = await fetch(`https://api.ensideas.com/ens/resolve/${walletQuery}`);
+            const ensData = await ensRes.json();
+            if (ensData.address) walletQuery = ensData.address;
+        }
+
+        // STEP 2: CALL API
+        const res = await fetch(`/api/view?wallet=${walletQuery}${continuation ? `&next=${continuation}` : ''}`);
         const data = await res.json();
+
         if (data.nfts) {
             allNfts = [...allNfts, ...data.nfts];
             displayList = isNew ? [...allNfts].sort(() => Math.random() - 0.5) : [...displayList, ...data.nfts];
             continuation = data.next;
+            
             document.getElementById('dynamicControls').classList.remove('hidden');
             bottomNav.classList.remove('hidden');
             renderAll();
-            if (!isNew) { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
+            
+            if (!isNew) { 
+                toast.classList.add('show'); 
+                setTimeout(() => toast.classList.remove('show'), 3000); 
+            }
         }
     } catch (e) {} finally { isFetching = false; }
 }
@@ -197,13 +217,12 @@ document.querySelector('.close-btn').onclick = () => { modal.classList.add('hidd
 document.getElementById('navHome').onclick = () => switchView('snap');
 document.getElementById('navGrid').onclick = () => switchView('grid');
 
-// SANTA CLICK -> TWEET PROMPT
+// SANTA CLICK -> TWEET PROMPT (3 LINES)
 document.getElementById('santaBtn').onclick = () => {
     const line1 = "Hi 'tag a recipient' 🎄,";
-    const line2 = "Merry Christmas, May this season bring joy, happiness, and prosperity, and fill your lives with love and compassion.❤️";
-    const line3 = "Oh, and @blvckishh1 says hi too!🎅🏾";
+    const line2 = "Merry Christmas, May this season bring joy, happiness, and prosperity, and fill your lives with love and compassion.";
+    const line3 = "Check out this NFT gallery on VIEW!"; // Added line 3
     
-    // Using \n for new lines in the string, encodeURIComponent handles the rest
     const fullMessage = `${line1}\n\n${line2}\n\n${line3}`;
     const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(fullMessage)}`;
     
