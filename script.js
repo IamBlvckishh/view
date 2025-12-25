@@ -221,7 +221,7 @@ document.getElementById('navGrid').onclick = () => switchView('grid');
 document.getElementById('santaBtn').onclick = () => {
     const line1 = "Hi 'tag a recipient' 🎄,";
     const line2 = "Merry Christmas, May this season bring joy, happiness, and prosperity, and fill your lives with love and compassion.";
-    const line3 = "Check out this NFT gallery on VIEW!"; // Added line 3
+    const line3 = "Oh, and @blvckishh1 says hi too!🎅🏾"; 
     
     const fullMessage = `${line1}\n\n${line2}\n\n${line3}`;
     const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(fullMessage)}`;
