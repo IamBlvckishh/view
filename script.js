@@ -220,7 +220,7 @@ document.getElementById('navGrid').onclick = () => switchView('grid');
 // SANTA CLICK -> TWEET PROMPT (3 LINES)
 document.getElementById('santaBtn').onclick = () => {
     const line1 = "Hi 'tag a recipient' 🎄,";
-    const line2 = "Merry Christmas, may this season bring joy, happiness, and prosperity, and fill your lives with love and compassion.";
+    const line2 = "Merry Christmas, may this season bring joy, happiness, and prosperity, and fill your lives with love and compassion.❤️";
     const line3 = "Oh, and @blvckishh1 says hi too!🎅🏾"; 
     
     const fullMessage = `${line1}\n\n${line2}\n\n${line3}`;
