@@ -24,16 +24,15 @@
             <div class="controls-row">
                 <button id="shuffleBtn">SHUFFLE ART</button>
                 <div class="dropdown-group">
-                    <div class="select-wrapper">
-                        <select id="chainSelect">
-                            <option value="ethereum">ETH</option>
-                            <option value="base">BASE</option>
-                            <option value="shape">SHAPE</option>
-                        </select>
-                    </div>
+                    <select id="chainSelect">
+                        <option value="ethereum">ETH</option>
+                        <option value="base">BASE</option>
+                        <option value="shape">SHAPE</option>
+                    </select>
                     <select id="sortSelect">
                         <option value="none">SORT: NONE</option>
                         <option value="project">SORT: PROJECT</option>
+                        <option value="name">SORT: NAME</option>
                     </select>
                 </div>
             </div>
@@ -45,8 +44,14 @@
     <button id="backToTop"><i data-lucide="arrow-up"></i></button>
 
     <nav id="bottomNav" class="hidden">
-        <div class="nav-item active" id="navHome"><i data-lucide="layers"></i><span>SCROLL</span></div>
-        <div class="nav-item" id="navGrid"><i data-lucide="layout-grid"></i><span>GRID</span></div>
+        <div class="nav-item active" id="navHome">
+            <i data-lucide="layers"></i>
+            <span>SCROLL</span>
+        </div>
+        <div class="nav-item" id="navGrid">
+            <i data-lucide="layout-grid"></i>
+            <span>GRID</span>
+        </div>
     </nav>
 
     <div id="detailModal" class="modal hidden">
@@ -59,6 +64,8 @@
         </div>
     </div>
 
+    <div id="assetToast">NEW ASSETS LOADED</div>
+    
     <script src="script.js"></script>
 </body>
 </html>
