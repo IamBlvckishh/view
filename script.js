@@ -3,53 +3,50 @@ const gallery = document.getElementById('gallery'), input = document.getElementB
 const header = document.getElementById('mainHeader'), bottomNav = document.getElementById('bottomNav');
 const modal = document.getElementById('detailModal'), chainSelect = document.getElementById('chainSelect');
 
-let allNfts = [], displayList = [], continuation = null, isFetching = false, lastScrollY = 0;
+let allNfts = [], displayList = [], continuation = null, isFetching = false;
 
 window.addEventListener('load', () => {
-    const saved = localStorage.getItem('savedWallet');
-    if (saved) { input.value = saved; fetchArt(true); }
-    initSnow();
+    const savedWallet = localStorage.getItem('savedWallet');
+    if (savedWallet) { input.value = savedWallet; fetchArt(true); }
+    initSnow(); // Snow mechanism restored
 });
 
+// SNOW MECHANISM
 function initSnow() {
     const sc = document.createElement('div'); sc.id = 'snow-container'; document.body.appendChild(sc);
     setInterval(() => {
         const f = document.createElement('div'); f.className = 'snowflake'; f.innerHTML = '❄';
         f.style.left = Math.random() * 100 + 'vw'; 
         f.style.animationDuration = (Math.random() * 3 + 2) + 's';
-        f.style.opacity = Math.random();
         sc.appendChild(f); setTimeout(() => f.remove(), 4000);
-    }, 450);
+    }, 500);
 }
 
+// MULTI-CHAIN FETCH
 async function fetchArt(isNew = false) {
     let wallet = input.value.trim();
     if (!wallet || isFetching) return;
     isFetching = true;
+    localStorage.setItem('savedWallet', wallet);
+    
     if (isNew) { allNfts = []; gallery.innerHTML = ""; continuation = null; }
 
-    const chain = chainSelect.value;
-    const chainsToFetch = chain === 'all' ? ['ethereum', 'base', 'shape'] : [chain];
+    const chain = chainSelect.value; // Respects the selector
 
     try {
-        const requests = chainsToFetch.map(c => 
-            fetch(`/api/view?wallet=${wallet}&chain=${c}${continuation ? `&next=${continuation}` : ''}`)
-            .then(r => r.json())
-        );
-
-        const results = await Promise.all(requests);
-        results.forEach((data, i) => {
-            if (data.nfts) {
-                const tagged = data.nfts.map(n => ({ ...n, chain: chainsToFetch[i] }));
-                allNfts = [...allNfts, ...tagged];
-            }
+        const res = await fetch(`/api/view?wallet=${wallet}&chain=${chain}${continuation ? `&next=${continuation}` : ''}`);
+        const data = await res.json();
+        
+        if (data.nfts) {
+            const tagged = data.nfts.map(n => ({ ...n, chain: chain }));
+            allNfts = [...allNfts, ...tagged];
+            displayList = [...allNfts];
             if (data.next) continuation = data.next;
-        });
-
-        displayList = [...allNfts];
-        document.getElementById('dynamicControls').classList.remove('hidden');
-        bottomNav.classList.remove('hidden');
-        renderAll();
+            
+            document.getElementById('dynamicControls').classList.remove('hidden');
+            bottomNav.classList.remove('hidden');
+            renderAll();
+        }
     } catch (e) { console.error(e); } finally { isFetching = false; }
 }
 
@@ -76,25 +73,28 @@ function renderAll() {
     }
 }
 
-async function showDetails(contract, id, chain) {
+async function showDetails(c, id, chain) {
     modal.classList.remove('hidden');
     const m = document.getElementById('modalData');
     m.innerHTML = `<div class="spinner"></div>`;
-    const res = await fetch(`/api/view?address=${contract}&id=${id}&chain=${chain}`);
-    const data = await res.json();
-    const n = data.nft;
-    m.innerHTML = `
-        <div class="modal-body show-details">
-            <img src="${n.image_url || n.display_image_url}">
-            <div class="modal-text-content">
-                <h2>${n.name || 'UNTITLED'}</h2>
-                <p>${n.collection}</p>
-                <a href="${n.opensea_url}" target="_blank" class="os-btn">OPENSEA</a>
-            </div>
-        </div>`;
+    try {
+        const res = await fetch(`/api/view?address=${c}&id=${id}&chain=${chain}`);
+        const data = await res.json();
+        const n = data.nft;
+        m.innerHTML = `
+            <div class="modal-body show-details">
+                <img src="${n.image_url || n.display_image_url}">
+                <div class="modal-text-content">
+                    <h2>${n.name || 'UNTITLED'}</h2>
+                    <p>${n.collection || ''}</p>
+                    <a href="${n.opensea_url}" target="_blank" class="os-btn">VIEW ON OPENSEA</a>
+                </div>
+            </div>`;
+    } catch (e) { modal.classList.add('hidden'); }
 }
 
 document.getElementById('goBtn').onclick = () => fetchArt(true);
+chainSelect.onchange = () => fetchArt(true);
 document.getElementById('navHome').onclick = () => { document.documentElement.setAttribute('data-view', 'snap'); renderAll(); };
 document.getElementById('navGrid').onclick = () => { document.documentElement.setAttribute('data-view', 'grid'); renderAll(); };
 document.querySelector('.close-btn').onclick = () => modal.classList.add('hidden');
