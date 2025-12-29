@@ -2,7 +2,7 @@ lucide.createIcons();
 const gallery = document.getElementById('gallery'), input = document.getElementById('walletInput');
 const header = document.getElementById('mainHeader'), bottomNav = document.getElementById('bottomNav');
 const modal = document.getElementById('detailModal'), sortSelect = document.getElementById('sortSelect'), backToTop = document.getElementById('backToTop');
-const chainSelect = document.getElementById('chainSelect'); // Added selector link
+const chainSelect = document.getElementById('chainSelect');
 
 let toast = document.getElementById('assetToast') || document.createElement('div');
 if (!toast.id) { toast.id = 'assetToast'; toast.innerText = 'NEW ASSETS LOADED'; document.body.appendChild(toast); }
@@ -15,10 +15,9 @@ window.addEventListener('load', () => {
     const savedWallet = localStorage.getItem('savedWallet'), savedTheme = localStorage.getItem('theme');
     if (savedWallet) { input.value = savedWallet; fetchArt(true); }
     if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
-    initSnow(); // Snow stays, Santa goes.
+    initSnow();
 });
 
-// Respect the chain selection when changed
 chainSelect.onchange = () => fetchArt(true);
 
 function updateCounter(slider, collectionKey) {
@@ -74,54 +73,38 @@ gallery.addEventListener('touchend', e => {
     if (gallery.scrollTop <= 0 && dy > 130) fetchArt(true);
 }, {passive: true});
 
-// ENS & MULTI-CHAIN API FETCH
 async function fetchArt(isNew = false) {
     let walletQuery = input.value.trim();
     if (!walletQuery || isFetching) return;
-    
     isFetching = true;
     localStorage.setItem('savedWallet', walletQuery);
-
-    if (isNew) { 
-        allNfts = []; displayList = []; gallery.innerHTML = ""; snapPositions = {}; continuation = null; 
-    }
-
-    const selectedChain = chainSelect.value; // GET SELECTED CHAIN
-
+    if (isNew) { allNfts = []; displayList = []; gallery.innerHTML = ""; snapPositions = {}; continuation = null; }
+    const selectedChain = chainSelect.value;
     try {
         if (walletQuery.toLowerCase().endsWith('.eth')) {
             const ensRes = await fetch(`https://api.ensideas.com/ens/resolve/${walletQuery}`);
             const ensData = await ensRes.json();
             if (ensData.address) walletQuery = ensData.address;
         }
-
         const res = await fetch(`/api/view?wallet=${walletQuery}&chain=${selectedChain}${continuation ? `&next=${continuation}` : ''}`);
         const data = await res.json();
-
         if (data.nfts) {
-            // Tag with chain so details view knows which network to use
-            const taggedNfts = data.nfts.map(n => ({ ...n, chain: selectedChain }));
+            const taggedNfts = data.nfts.map(n => ({ ...n, chain: n.chain || selectedChain }));
             allNfts = [...allNfts, ...taggedNfts];
             displayList = isNew ? [...allNfts].sort(() => Math.random() - 0.5) : [...displayList, ...taggedNfts];
             continuation = data.next;
-            
             document.getElementById('dynamicControls').classList.remove('hidden');
             bottomNav.classList.remove('hidden');
             renderAll();
-            
-            if (!isNew) { 
-                toast.classList.add('show'); 
-                setTimeout(() => toast.classList.remove('show'), 3000); 
-            }
+            if (!isNew) { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
         }
-    } catch (e) {} finally { isFetching = false; }
+    } catch (e) { console.error(e); } finally { isFetching = false; }
 }
 
 function renderAll(filter = "") {
     gallery.innerHTML = '<div id="refreshIndicator"><div class="spinner"></div><span>PULL TO REFRESH</span></div>';
     const mode = document.documentElement.getAttribute('data-view'), sort = sortSelect.value;
     let list = [...displayList].filter(n => (n.collection || "").toLowerCase().includes(filter.toLowerCase()));
-
     if (mode === 'snap') {
         const groups = {};
         list.forEach((n, i) => { const k = n.collection || i; if (!groups[k]) groups[k] = []; groups[k].push(n); });
@@ -184,6 +167,9 @@ async function showDetails(c, id, isTwoStep, chain = 'ethereum') {
                 <div id="detailHint">TAP IMAGE FOR DETAILS</div>
                 <img src="${imgUrl}" id="modalMainImg">
                 <div class="modal-text-content">
+                    <div style="display:flex; margin-bottom:8px;">
+                        <span class="chain-badge badge-${chain.toLowerCase()}">${chain.toUpperCase()}</span>
+                    </div>
                     <h2 style="font-weight:900;">${n.name || 'UNTITLED'}</h2>
                     <p style="opacity:0.5; font-size:12px;">${n.collection || ''}</p>
                     <p style="margin-top:10px; font-size:14px; opacity:0.8;">${n.description || ''}</p>
@@ -227,8 +213,7 @@ function initSnow() {
     const sc = document.createElement('div'); sc.id = 'snow-container'; document.body.appendChild(sc);
     setInterval(() => {
         const f = document.createElement('div'); f.className = 'snowflake'; f.innerHTML = '❄';
-        f.style.left = Math.random() * 100 + 'vw'; 
-        f.style.opacity = Math.random();
+        f.style.left = Math.random() * 100 + 'vw'; f.style.opacity = Math.random();
         f.style.animationDuration = (Math.random() * 3 + 2) + 's';
         sc.appendChild(f); setTimeout(() => f.remove(), 4000);
     }, 500);
