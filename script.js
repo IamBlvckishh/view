@@ -62,6 +62,11 @@ gallery.addEventListener('touchmove', e => {
     if (dx > 10 && dx > dy) setUIHidden(true);
 }, {passive: true});
 
+// LAPTOP HORIZONTAL SCROLL HIDE
+gallery.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaX) > 5) setUIHidden(true);
+}, { passive: true });
+
 gallery.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
     const dy = e.changedTouches[0].clientY - touchStartY;
