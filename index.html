@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VIEW</title>
+    <title>VIEW | Gallery</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -11,8 +11,7 @@
 
     <header id="mainHeader">
         <div class="logo-row">
-            <button id="santaBtn" class="santa-btn">🎅</button>
-            <h1>VIEW🎄</h1>
+            <h1>VIEW</h1>
             <button class="icon-btn" id="themeToggle"><i data-lucide="sun"></i></button>
         </div>
 
@@ -24,11 +23,18 @@
         <div id="dynamicControls" class="hidden">
             <div class="controls-row">
                 <button id="shuffleBtn">SHUFFLE ART</button>
-                <select id="sortSelect">
-                    <option value="none">SORT: NONE</option>
-                    <option value="project">SORT: PROJECT</option>
-                    <option value="name">SORT: NAME</option>
-                </select>
+                <div class="dropdown-group">
+                    <select id="chainSelect">
+                        <option value="all">ALL CHAINS</option>
+                        <option value="ethereum">ETH</option>
+                        <option value="base">BASE</option>
+                        <option value="shape">SHAPE</option>
+                    </select>
+                    <select id="sortSelect">
+                        <option value="none">SORT: NONE</option>
+                        <option value="project">PROJECT</option>
+                    </select>
+                </div>
             </div>
         </div>
     </header>
@@ -38,14 +44,8 @@
     <button id="backToTop"><i data-lucide="arrow-up"></i></button>
 
     <nav id="bottomNav" class="hidden">
-        <div class="nav-item active" id="navHome">
-            <i data-lucide="layers"></i>
-            <span>SCROLL</span>
-        </div>
-        <div class="nav-item" id="navGrid">
-            <i data-lucide="layout-grid"></i>
-            <span>GRID</span>
-        </div>
+        <div class="nav-item active" id="navHome"><i data-lucide="layers"></i><span>SCROLL</span></div>
+        <div class="nav-item" id="navGrid"><i data-lucide="layout-grid"></i><span>GRID</span></div>
     </nav>
 
     <div id="detailModal" class="modal hidden">
